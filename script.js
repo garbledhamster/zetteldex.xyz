@@ -1,0 +1,52 @@
+const collapseAllBtn = document.getElementById("collapseAllBtn")
+const expandAllBtn = document.getElementById("expandAllBtn")
+const indexList = document.getElementById("indexList")
+const newCardBtn = document.getElementById("newCardBtn")
+const selectCardBtn = document.getElementById("selectCardBtn")
+const placeholderView = document.getElementById("placeholderView")
+const cardDetails = document.getElementById("cardDetails")
+const cameraBtn = document.getElementById("cameraBtn")
+const editBtn = document.getElementById("editBtn")
+const saveBtn = document.getElementById("saveBtn")
+const detailIndex = document.getElementById("detailIndex")
+const detailName = document.getElementById("detailName")
+const detailFront = document.getElementById("detailFront")
+const detailBack = document.getElementById("detailBack")
+const detailKeywords = document.getElementById("detailKeywords")
+const detailConnections = document.getElementById("detailConnections")
+const cardTitle = document.getElementById("cardTitle")
+const newCardModal = document.getElementById("newCardModal")
+const modalIndex = document.getElementById("modalIndex")
+const modalName = document.getElementById("modalName")
+const modalKeywords = document.getElementById("modalKeywords")
+const cancelModalBtn = document.getElementById("cancelModalBtn")
+const addCardBtn = document.getElementById("addCardBtn")
+const importBtn = document.getElementById("importBtn")
+const exportBtn = document.getElementById("exportBtn")
+const infoModal = document.getElementById("infoModal")
+const infoModalTitle = document.getElementById("infoModalTitle")
+const infoModalMessage = document.getElementById("infoModalMessage")
+const closeInfoModalBtn = document.getElementById("closeInfoModalBtn")
+let cards = { "1111.1": { index: "1111.1", name: "Apologies", front: "This is the front text.", back: "This is the back text.", keywords: "mind, resilience", connections: "3471.1.3" } }
+function showInfoModal(t, m) { infoModalTitle.textContent = t || "Information"; infoModalMessage.textContent = m || ""; infoModal.classList.add("visible") }
+closeInfoModalBtn.addEventListener("click", () => { infoModal.classList.remove("visible") })
+function setAllExpansion(ul, exp) { ul.querySelectorAll("li").forEach(li => { li.setAttribute("data-expanded", exp); let c = li.querySelector("ul"); if (c) c.style.display = exp === "true" ? "block" : "none" }); refreshArrows() }
+collapseAllBtn.addEventListener("click", () => { setAllExpansion(indexList, "false") })
+expandAllBtn.addEventListener("click", () => { setAllExpansion(indexList, "true") })
+indexList.addEventListener("click", e => {
+    if (e.target.classList.contains("collapse-arrow")) { let li = e.target.closest("li"); if (!li) return; let c = li.querySelector("ul"); if (c) { let s = li.getAttribute("data-expanded") === "true"; li.setAttribute("data-expanded", s ? "false" : "true"); c.style.display = s ? "none" : "block" } refreshArrows(); e.stopPropagation() }
+    else if (e.target.closest(".collapse-toggle")) { let li = e.target.closest("li"); indexList.querySelectorAll("li").forEach(i => i.classList.remove("selected")); li.classList.add("selected"); let idx = li.querySelector(".index-number"); let nm = li.querySelector(".card-name"); if (idx && nm) { loadCardDetails(idx.textContent.trim(), nm.textContent.trim()) } e.stopPropagation() }
+})
+function loadCardDetails(i, n) { placeholderView.style.display = "none"; cardDetails.classList.add("visible"); if (cards[i]) { detailIndex.value = cards[i].index; detailName.value = cards[i].name; detailFront.value = cards[i].front; detailBack.value = cards[i].back; detailKeywords.value = cards[i].keywords; detailConnections.value = cards[i].connections; cardTitle.textContent = cards[i].name } else { detailIndex.value = i; detailName.value = n; detailFront.value = ""; detailBack.value = ""; detailKeywords.value = ""; detailConnections.value = ""; cardTitle.textContent = n } setCardEditMode(false) }
+newCardBtn.addEventListener("click", () => { modalIndex.value = ""; modalName.value = ""; modalKeywords.value = ""; newCardModal.classList.add("visible"); modalIndex.focus() })
+selectCardBtn.addEventListener("click", () => { indexList.classList.add("highlight"); setTimeout(() => indexList.classList.remove("highlight"), 1500) })
+cancelModalBtn.addEventListener("click", () => { newCardModal.classList.remove("visible") })
+addCardBtn.addEventListener("click", () => { let i = modalIndex.value.trim(); let n = modalName.value.trim(); let k = modalKeywords.value.trim(); if (i && n) { cards[i] = { index: i, name: n, front: "", back: "", keywords: k, connections: "" }; newCardModal.classList.remove("visible"); showInfoModal("Card Added", "Index: " + i + "\nName: " + n) } else { showInfoModal("Incomplete Data", "Please enter both Index and Name.") } })
+editBtn.addEventListener("click", () => { setCardEditMode(true) })
+saveBtn.addEventListener("click", () => { let i = detailIndex.value.trim(); if (!i) { showInfoModal("Error", "Invalid card index."); return } cards[i] = { index: detailIndex.value, name: detailName.value, front: detailFront.value, back: detailBack.value, keywords: detailKeywords.value, connections: detailConnections.value }; setCardEditMode(false); showInfoModal("Success", "Your card was saved!") })
+function setCardEditMode(e) { detailIndex.readOnly = !e; detailName.readOnly = !e; detailFront.readOnly = !e; detailBack.readOnly = !e; detailKeywords.readOnly = !e; detailConnections.readOnly = !e; editBtn.style.display = e ? "none" : "inline-block"; saveBtn.style.display = e ? "inline-block" : "none" }
+cameraBtn.addEventListener("click", () => { showInfoModal("Feature Coming Soon", "You'll be able to upload images.") })
+importBtn.addEventListener("click", () => { showInfoModal("Import JSON", "In a real app, you'd prompt for a JSON file.") })
+exportBtn.addEventListener("click", () => { let d = JSON.stringify(cards, null, 2); showInfoModal("Export JSON", "Here is your data:\n" + d) })
+function refreshArrows() { indexList.querySelectorAll("li").forEach(li => { let a = li.querySelector(".collapse-arrow"); let c = li.querySelector("ul"); if (!a) return; if (!c) { a.textContent = ""; a.style.cursor = "default" } else { a.textContent = li.getAttribute("data-expanded") === "true" ? "▼" : "▶" } }) }
+refreshArrows()
