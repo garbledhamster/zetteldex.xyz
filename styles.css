@@ -45,8 +45,8 @@ header h1 {
 
 .sidebar {
     width: 300px;
-    min-width: 240px;
-    max-width: 360px;
+    min-width: 350px;
+    max-width: 350px;
     background: #3B185F;
     border-right: 1px solid #6B3FA0;
     display: flex;
@@ -60,7 +60,8 @@ header h1 {
     justify-content: space-around;
     padding: .5rem;
     background: #5C249E;
-    border-bottom: 1px solid #6B3FA0
+    border-bottom: 1px solid #6B3FA0;
+    gap: 6px
 }
 
 .expand-controls button {
@@ -76,6 +77,24 @@ header h1 {
 
 .expand-controls button:hover {
     background: #7331C5
+}
+
+.icon-button {
+    background-color: #4b2e83;
+    color: #fff;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    width: 50px
+}
+
+.icon-button:hover {
+    background-color: #5d3a9b
 }
 
 .index-list {
@@ -214,7 +233,6 @@ li.selected .collapse-toggle {
         opacity: 0;
         transform: translateY(10px)
     }
-
     to {
         opacity: 1;
         transform: translateY(0)
@@ -426,21 +444,28 @@ li.selected .collapse-toggle {
     background: #3C0B6D
 }
 
-@media(max-width:500px) {
-    .container {
-        flex-direction: column
-    }
-
-    .sidebar {
-        width: 100%;
-        max-height: 220px;
-        overflow-y: auto;
-        border-right: none;
-        border-bottom: 1px solid #6B3FA0
-    }
-
-    .main-content {
-        flex: none;
-        flex-grow: 1
-    }
+@media(max-width:500px){
+  .container {
+    flex-direction: column
+  }
+  .sidebar {
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 1px solid #6B3FA0
+  }
+  .main-content {
+    flex: none;c
+    flex-grow: 1
+  }
 }
+.index-number {
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+  }
+  
+  .card-name {
+    margin-left: 0.25rem;
+  }
+    

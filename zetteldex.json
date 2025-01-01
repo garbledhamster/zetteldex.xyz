@@ -1,0 +1,90 @@
+{
+    "1000": {
+      "index": "1000",
+      "name": "Mind",
+      "front": "Overview of mental processes, thoughts, and psychology.",
+      "back": "A broad category for everything related to cognition and awareness.",
+      "keywords": "mind, cognition, psychology"
+    },
+    "1100": {
+      "index": "1100",
+      "name": "Resilience",
+      "front": "Building mental toughness and emotional flexibility.",
+      "back": "Techniques and philosophies to bounce back from adversity.",
+      "keywords": "mind, resilience, emotion"
+    },
+    "1110": {
+      "index": "1110",
+      "name": "NVC",
+      "front": "Nonviolent Communication overview and fundamentals.",
+      "back": "Fostering empathy, clarity, and conflict resolution.",
+      "keywords": "communication, empathy, conflict"
+    },
+    "1111": {
+      "index": "1111",
+      "name": "Giraffe",
+      "front": "A symbol often used in NVC for its long neck (big-picture perspective).",
+      "back": "Represents speaking from the heart and seeing the bigger picture.",
+      "keywords": "symbol, empathy, NVC"
+    },
+    "1111.1": {
+      "index": "1111.1",
+      "name": "Apologies",
+      "front": "A look at how to give and receive apologies through NVC.",
+      "back": "Ownership, accountability, and maintaining empathy.",
+      "keywords": "apology, empathy, repair"
+    },
+    "1111.1.1": {
+      "index": "1111.1.1",
+      "name": "Deeper Apologies",
+      "front": "This is the front text.",
+      "back": "This is the back text.",
+      "keywords": "mind, resilience"
+    },
+  
+    "2000": {
+      "index": "2000",
+      "name": "Body",
+      "front": "Overview of the physical form and well-being.",
+      "back": "Focuses on health, nutrition, and physical training.",
+      "keywords": "body, health, physical"
+    },
+    "2100": {
+      "index": "2100",
+      "name": "Nutrition",
+      "front": "The science and practice of consuming and utilizing foods.",
+      "back": "Balanced approaches to fueling the body and mind.",
+      "keywords": "nutrition, health, diet"
+    },
+  
+    "3000": {
+      "index": "3000",
+      "name": "Spirit",
+      "front": "The intangible aspect of self beyond the mind and body.",
+      "back": "Exploration of purpose, interconnectedness, and insight.",
+      "keywords": "spirit, soul, purpose"
+    },
+    "3100": {
+      "index": "3100",
+      "name": "Meditation",
+      "front": "Various forms of mindfulness and concentration practices.",
+      "back": "Helps cultivate clarity, calmness, and self-awareness.",
+      "keywords": "meditation, mindfulness, calm"
+    },
+  
+    "4000": {
+      "index": "4000",
+      "name": "Life",
+      "front": "Broad category for everyday living, relationships, and personal growth.",
+      "back": "Balancing responsibilities, joys, and challenges in daily life.",
+      "keywords": "life, daily-living, personal-growth"
+    },
+    "4100": {
+      "index": "4100",
+      "name": "Goal Setting",
+      "front": "Strategies for creating and pursuing personal goals effectively.",
+      "back": "Techniques like SMART goals, habit formation, and accountability.",
+      "keywords": "goals, ambition, self-improvement"
+    }
+  }
+  
