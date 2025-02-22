@@ -1,6 +1,13 @@
 let cards = []
 let selectedCard = null
 let currentImageIndex = 0
+let scale = 1
+let offsetX = 0
+let offsetY = 0
+let isDragging = false
+let startX = 0
+let startY = 0
+let isEditMode = false
 document.addEventListener('DOMContentLoaded', () => {
   feather.replace()
   loadFromLocalStorage()
@@ -28,7 +35,7 @@ function setupListeners() {
   })
   document.getElementById('cancelModalBtn').addEventListener('click', closeNewCardModal)
   document.getElementById('addCardBtn').addEventListener('click', addCardFromModal)
-  document.getElementById('editBtn').addEventListener('click', enterEditMode)
+  document.getElementById('editBtn').addEventListener('click', toggleEditMode)
   document.getElementById('saveBtn').addEventListener('click', saveCardChanges)
   document.getElementById('closeInfoModalBtn').addEventListener('click', closeInfoModal)
   document.getElementById('searchBar').addEventListener('input', e => filterCards(e.target.value))
@@ -49,6 +56,40 @@ function setupListeners() {
   document.getElementById('closeImageViewerBtn').addEventListener('click', closeImageViewer)
   document.getElementById('prevImageBtn').addEventListener('click', () => showImageAt(currentImageIndex - 1))
   document.getElementById('nextImageBtn').addEventListener('click', () => showImageAt(currentImageIndex + 1))
+  document.getElementById('imageViewerModal').addEventListener('click', e => {
+    if (e.target.id === 'imageViewerModal') closeImageViewer()
+  })
+  const container = document.getElementById('imageViewerContainer')
+  container.addEventListener('wheel', e => {
+    if (!selectedCard) return
+    if (e.ctrlKey) {
+      e.preventDefault()
+      if (e.deltaY < 0) scale += 0.1
+      else scale -= 0.1
+      if (scale < 0.1) scale = 0.1
+      applyTransform()
+    }
+  })
+  const img = document.getElementById('viewerImage')
+  img.addEventListener('mousedown', e => {
+    if (scale <= 1) return
+    isDragging = true
+    startX = e.clientX - offsetX
+    startY = e.clientY - offsetY
+    e.preventDefault()
+  })
+  container.addEventListener('mousemove', e => {
+    if (!isDragging) return
+    offsetX = e.clientX - startX
+    offsetY = e.clientY - startY
+    applyTransform()
+  })
+  container.addEventListener('mouseup', () => {
+    isDragging = false
+  })
+  container.addEventListener('mouseleave', () => {
+    isDragging = false
+  })
 }
 function showPlaceholder() {
   document.getElementById('placeholderView').style.display = 'block'
@@ -121,16 +162,42 @@ function renderImageGallery(card) {
   const gal = document.getElementById('imageGallery')
   gal.innerHTML = ''
   if (!card.images || card.images.length === 0) return
-  card.images.forEach((imgSrc, i) => {
+  card.images.forEach((src, i) => {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'image-thumb-wrapper'
     const thumb = document.createElement('img')
     thumb.className = 'image-thumb'
-    thumb.src = imgSrc
+    thumb.src = src
     thumb.addEventListener('click', () => openImageViewer(i))
-    gal.appendChild(thumb)
+    if (isEditMode) {
+      const delBtn = document.createElement('button')
+      delBtn.className = 'delete-thumb-btn'
+      delBtn.textContent = 'X'
+      delBtn.style.display = 'block'
+      delBtn.addEventListener('click', e => {
+        e.stopPropagation()
+        if (!selectedCard) return
+        selectedCard.images.splice(i,1)
+        saveToLocalStorage()
+        showCardDetails(selectedCard)
+      })
+      wrapper.appendChild(delBtn)
+    }
+    wrapper.appendChild(thumb)
+    gal.appendChild(wrapper)
   })
+}
+function toggleEditMode() {
+  if (!selectedCard) return
+  if (!isEditMode) {
+    enterEditMode()
+  } else {
+    exitEditMode()
+  }
 }
 function enterEditMode() {
   if (!selectedCard) return
+  isEditMode = true
   document.getElementById('detailIndex').readOnly = false
   document.getElementById('detailName').readOnly = false
   document.getElementById('detailFront').readOnly = false
@@ -138,8 +205,10 @@ function enterEditMode() {
   document.getElementById('detailKeywords').readOnly = false
   document.getElementById('detailConnections').readOnly = false
   document.getElementById('saveBtn').style.display = 'inline-flex'
+  renderImageGallery(selectedCard)
 }
 function exitEditMode() {
+  isEditMode = false
   document.getElementById('detailIndex').readOnly = true
   document.getElementById('detailName').readOnly = true
   document.getElementById('detailFront').readOnly = true
@@ -147,6 +216,7 @@ function exitEditMode() {
   document.getElementById('detailKeywords').readOnly = true
   document.getElementById('detailConnections').readOnly = true
   document.getElementById('saveBtn').style.display = 'none'
+  renderImageGallery(selectedCard)
 }
 function saveCardChanges() {
   if (!selectedCard) return
@@ -310,6 +380,7 @@ function handleImageInput(e) {
 }
 function openImageViewer(i) {
   currentImageIndex = i
+  resetTransform()
   showImageAt(currentImageIndex)
   document.getElementById('imageViewerModal').classList.add('visible')
 }
@@ -323,5 +394,15 @@ function showImageAt(i) {
 }
 function closeImageViewer() {
   document.getElementById('imageViewerModal').classList.remove('visible')
+  resetTransform()
 }
-let isResizing = false
+function resetTransform() {
+  scale = 1
+  offsetX = 0
+  offsetY = 0
+  applyTransform()
+}
+function applyTransform() {
+  const img = document.getElementById('viewerImage')
+  img.style.transform = 'translate(' + offsetX + 'px,' + offsetY + 'px) scale(' + scale + ')'
+}

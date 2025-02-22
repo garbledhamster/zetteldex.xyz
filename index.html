@@ -132,10 +132,12 @@
     </div>
   </div>
   <div class="modal" id="imageViewerModal">
-    <div class="image-viewer-container">
+    <div class="image-viewer-container" id="imageViewerContainer">
       <button class="viewer-close" id="closeImageViewerBtn">&times;</button>
       <button class="viewer-nav" id="prevImageBtn">&#10094;</button>
-      <img id="viewerImage" src="" alt="">
+      <div class="viewer-frame" id="viewerFrame">
+        <img id="viewerImage" src="" alt="">
+      </div>
       <button class="viewer-nav" id="nextImageBtn">&#10095;</button>
     </div>
   </div>
