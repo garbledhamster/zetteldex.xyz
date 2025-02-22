@@ -5,6 +5,7 @@
     padding: 0;
     box-sizing: border-box;
 }
+
 html,
 body {
     width: 100%;
@@ -15,14 +16,18 @@ body {
     line-height: 1.4;
     overflow-x: hidden;
 }
+
 a {
     text-decoration: none;
     color: #FFFFFF;
 }
+
 body {
     display: flex;
     flex-direction: column;
 }
+
+/* Header */
 header {
     background: #4E0E8B;
     color: #FFFFFF;
@@ -40,6 +45,8 @@ header {
     font-weight: 500;
     flex: none;
 }
+
+/* Mobile toggle hidden by default; displayed via media query */
 .mobile-toggle {
     display: none;
     position: absolute;
@@ -47,11 +54,15 @@ header {
     top: 50%;
     transform: translateY(-50%);
 }
+
+/* Container */
 .container {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
+
+/* Sidebar */
 .sidebar {
     width: 300px;
     min-width: 300px;
@@ -139,6 +150,8 @@ header {
     cursor: col-resize;
     background-color: #5C249E;
 }
+
+/* Main content */
 .main-content {
     flex: 1;
     position: relative;
@@ -169,6 +182,8 @@ header {
 .placeholder button:active {
     transform: scale(0.97);
 }
+
+/* Card details */
 .card-details {
     display: none;
     flex-direction: column;
@@ -181,6 +196,7 @@ header {
 .card-details.visible {
     display: flex;
 }
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -291,6 +307,8 @@ header {
     cursor: pointer;
     display: none;
 }
+
+/* Modals */
 .modal {
     position: fixed;
     top: 0;
@@ -369,6 +387,7 @@ header {
 .add-btn:hover {
     background: #3C0B6D;
 }
+/* Info Modal */
 #infoModal .info-modal-content {
     background: #FFFFFF;
     padding: 1.5rem;
@@ -403,6 +422,8 @@ header {
 #infoModal .close-info-btn:hover {
     background: #3C0B6D;
 }
+
+/* Image viewer modal */
 .image-viewer-container {
     position: relative;
     max-width: 90%;
@@ -462,14 +483,28 @@ header {
     cursor: move;
 }
 
-/* Responsive / Mobile-specific rules */
+/* Hide the menu toggle and close button by default (desktop).
+   Display them only on smaller screens. */
+.mobile-toggle {
+    display: none; /* hide on desktop */
+}
+.mobile-only {
+    display: none; /* hide on desktop */
+}
+
+/* On mobile, show the toggle and close button */
 @media (max-width: 768px) {
     .mobile-toggle {
         display: inline-flex;
     }
+    .mobile-only {
+        display: inline-flex;
+    }
+
     .container {
         flex-direction: column;
     }
+
     .sidebar {
         position: absolute;
         left: -300px;
@@ -488,17 +523,6 @@ header {
         flex: none;
         margin-left: 0;
         width: 100%;
-    }
-}
-
-/* Show the close button on mobile */
-.mobile-only {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    .mobile-only {
-        display: inline-flex;
     }
 }
 
