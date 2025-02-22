@@ -3,16 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>Zettel Dex</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
-    <h1>Zettel Dex</h1>
+    <div class="header-content">
+      <!-- Menu Toggle (for mobile) -->
+      <button id="toggleSidebarBtn" class="icon-button mobile-toggle">
+        <i data-feather="menu"></i>
+      </button>
+      <h1>Zettel Dex</h1>
+    </div>
   </header>
+
   <div class="container">
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
+      <!-- Sidebar controls -->
       <div class="sidebar-controls">
+        <!-- Close button (visible only on mobile) -->
+        <button id="closeSidebarBtn" class="icon-button sidebar-close mobile-only">
+          <i data-feather="x"></i>
+        </button>
         <button id="homeBtn" class="icon-button">
           <i data-feather="home"></i>
         </button>
@@ -29,23 +42,34 @@
           <i data-feather="download"></i>
         </button>
       </div>
+
+      <!-- Search bar -->
       <div class="search-bar">
         <input type="text" id="searchBar" placeholder="Search...">
       </div>
+
+      <!-- Index list -->
       <div class="index-list" id="indexList">
         <ul></ul>
       </div>
+
+      <!-- Footer -->
       <div class="sidebar-footer">
         <a href="https://joerice.me" target="_blank">https://joerice.me</a>
       </div>
     </div>
+
+    <!-- Sidebar divider -->
     <div id="sidebarDivider" class="sidebar-divider"></div>
+
+    <!-- Main content -->
     <div class="main-content">
       <div class="placeholder" id="placeholderView">
         <button id="newCardBtn">Make new card</button>
         <div>or...</div>
         <button id="importJsonBtn">Import JSON</button>
       </div>
+
       <div class="card-details" id="cardDetails">
         <div class="card-header">
           <h2 id="cardTitle">[Card Title]</h2>
@@ -89,6 +113,8 @@
       </div>
     </div>
   </div>
+
+  <!-- Create a New Card Modal -->
   <div class="modal" id="newCardModal">
     <div class="modal-content">
       <h3>Create a New Card</h3>
@@ -104,6 +130,8 @@
       </div>
     </div>
   </div>
+
+  <!-- Info Modal -->
   <div class="modal" id="infoModal">
     <div class="info-modal-content">
       <h4 id="infoModalTitle"></h4>
@@ -111,6 +139,8 @@
       <button class="close-info-btn" id="closeInfoModalBtn">Close</button>
     </div>
   </div>
+
+  <!-- Confirm Delete Modal -->
   <div class="modal" id="deleteCardModal">
     <div class="modal-content">
       <h3>Confirm Delete</h3>
@@ -121,6 +151,8 @@
       </div>
     </div>
   </div>
+
+  <!-- Photo Options Modal -->
   <div class="modal" id="photoOptionsModal">
     <div class="modal-content">
       <h4>Photo Options</h4>
@@ -131,6 +163,8 @@
       <button class="cancel-btn" id="closePhotoOptionsBtn">Cancel</button>
     </div>
   </div>
+
+  <!-- Image Viewer Modal -->
   <div class="modal" id="imageViewerModal">
     <div class="image-viewer-container" id="imageViewerContainer">
       <button class="viewer-close" id="closeImageViewerBtn">&times;</button>
@@ -141,10 +175,30 @@
       <button class="viewer-nav" id="nextImageBtn">&#10095;</button>
     </div>
   </div>
+
+  <!-- Hidden File Inputs -->
   <input type="file" id="jsonImportFile" accept=".json" style="display: none;">
   <input type="file" id="cameraFileInput" accept="image/*" capture="camera" style="display:none;">
   <input type="file" id="uploadFileInput" accept="image/*" style="display:none;">
+
+  <!-- Feather Icons + Main Script -->
   <script src="https://unpkg.com/feather-icons"></script>
   <script src="script.js"></script>
+  <script>
+    // Replace all feather icons
+    feather.replace();
+
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    const sidebar = document.getElementById('sidebar');
+
+    // Open/close sidebar (mobile)
+    toggleSidebarBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+    closeSidebarBtn.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+    });
+  </script>
 </body>
 </html>
