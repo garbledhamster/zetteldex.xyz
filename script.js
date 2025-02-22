@@ -1,484 +1,327 @@
-/*******************************************************
- * DOM REFERENCES & GLOBALS 
- *******************************************************/
-const collapseAllBtn = document.getElementById("collapseAllBtn");
-const expandAllBtn = document.getElementById("expandAllBtn");
-const indexList = document.getElementById("indexList");
-const newCardBtn = document.getElementById("newCardBtn");
-const newCardBtnHeader = document.getElementById("newCardBtnHeader");
-const importJsonBtn = document.getElementById("importJsonBtn");
-const placeholderView = document.getElementById("placeholderView");
-const cardDetails = document.getElementById("cardDetails");
-const cameraBtn = document.getElementById("cameraBtn");
-const editBtn = document.getElementById("editBtn");
-const saveBtn = document.getElementById("saveBtn");
-const detailIndex = document.getElementById("detailIndex");
-const detailName = document.getElementById("detailName");
-const detailFront = document.getElementById("detailFront");
-const detailBack = document.getElementById("detailBack");
-const detailKeywords = document.getElementById("detailKeywords");
-const detailConnections = document.getElementById("detailConnections");
-const cardTitle = document.getElementById("cardTitle");
-const newCardModal = document.getElementById("newCardModal");
-const modalIndex = document.getElementById("modalIndex");
-const modalName = document.getElementById("modalName");
-const modalKeywords = document.getElementById("modalKeywords");
-const cancelModalBtn = document.getElementById("cancelModalBtn");
-const addCardBtn = document.getElementById("addCardBtn");
-const infoModal = document.getElementById("infoModal");
-const infoModalTitle = document.getElementById("infoModalTitle");
-const infoModalMessage = document.getElementById("infoModalMessage");
-const closeInfoModalBtn = document.getElementById("closeInfoModalBtn");
-const importBtn = document.getElementById("importBtn");
-const exportBtn = document.getElementById("exportBtn");
-const jsonImportFile = document.getElementById("jsonImportFile");
-const deleteCardModal = document.getElementById("deleteCardModal");
-const confirmDeleteCardBtn = document.getElementById("confirmDeleteCardBtn");
-const cancelDeleteCardBtn = document.getElementById("cancelDeleteCardBtn");
-const deleteCardBtn = document.getElementById("deleteCardBtn");
-
-let cards = {};
-let selectedCardIndex = null;
-
-/*******************************************************
- * APP INITIALIZATION
- *******************************************************/
-function init() {
-  feather.replace();
-
-  // 1️⃣ Try loading data from localStorage
-  const localData = localStorage.getItem("zetteldex");
-  if (localData) {
-    try {
-      cards = JSON.parse(localData);
-      buildIndexList();
-    } catch (err) {
-      console.error("Local cache parse error:", err);
-      // If something goes wrong, fetch from server
-      fetchAndCacheZetteldex();
-    }
-  } else {
-    // If no data in localStorage, fetch from server
-    fetchAndCacheZetteldex();
-  }
-
-  setupEvents();
+let cards = []
+let selectedCard = null
+let currentImageIndex = 0
+document.addEventListener('DOMContentLoaded', () => {
+  feather.replace()
+  loadFromLocalStorage()
+  renderSidebar()
+  setupListeners()
+  showPlaceholder()
+})
+function setupListeners() {
+  document.getElementById('homeBtn').addEventListener('click', () => {
+    selectedCard = null
+    showPlaceholder()
+  })
+  document.getElementById('newCardBtn').addEventListener('click', openNewCardModal)
+  document.getElementById('newCardBtnHeader').addEventListener('click', openNewCardModal)
+  document.getElementById('deleteCardBtn').addEventListener('click', openDeleteModal)
+  document.getElementById('cancelDeleteCardBtn').addEventListener('click', closeDeleteModal)
+  document.getElementById('confirmDeleteCardBtn').addEventListener('click', confirmDeleteCard)
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('jsonImportFile').click()
+  })
+  document.getElementById('jsonImportFile').addEventListener('change', handleImport)
+  document.getElementById('exportBtn').addEventListener('click', exportToJson)
+  document.getElementById('importJsonBtn').addEventListener('click', () => {
+    document.getElementById('jsonImportFile').click()
+  })
+  document.getElementById('cancelModalBtn').addEventListener('click', closeNewCardModal)
+  document.getElementById('addCardBtn').addEventListener('click', addCardFromModal)
+  document.getElementById('editBtn').addEventListener('click', enterEditMode)
+  document.getElementById('saveBtn').addEventListener('click', saveCardChanges)
+  document.getElementById('closeInfoModalBtn').addEventListener('click', closeInfoModal)
+  document.getElementById('searchBar').addEventListener('input', e => filterCards(e.target.value))
+  const divider = document.getElementById('sidebarDivider')
+  divider.addEventListener('mousedown', startSidebarResize)
+  document.getElementById('cameraBtn').addEventListener('click', openPhotoOptions)
+  document.getElementById('closePhotoOptionsBtn').addEventListener('click', () => {
+    document.getElementById('photoOptionsModal').classList.remove('visible')
+  })
+  document.getElementById('useCameraBtn').addEventListener('click', () => {
+    document.getElementById('cameraFileInput').click()
+  })
+  document.getElementById('uploadImageBtn').addEventListener('click', () => {
+    document.getElementById('uploadFileInput').click()
+  })
+  document.getElementById('cameraFileInput').addEventListener('change', handleImageInput)
+  document.getElementById('uploadFileInput').addEventListener('change', handleImageInput)
+  document.getElementById('closeImageViewerBtn').addEventListener('click', closeImageViewer)
+  document.getElementById('prevImageBtn').addEventListener('click', () => showImageAt(currentImageIndex - 1))
+  document.getElementById('nextImageBtn').addEventListener('click', () => showImageAt(currentImageIndex + 1))
 }
-
-/**
- * Fetch zetteldex.json from server, then store in localStorage
- * so that subsequent loads will come from the cache.
- */
-function fetchAndCacheZetteldex() {
-  fetch("zetteldex.json")
-    .then(r => r.json())
-    .then(data => {
-      cards = data;
-      localStorage.setItem("zetteldex", JSON.stringify(cards));
-      buildIndexList();
+function showPlaceholder() {
+  document.getElementById('placeholderView').style.display = 'block'
+  document.getElementById('cardDetails').classList.remove('visible')
+}
+function openNewCardModal() {
+  document.getElementById('modalIndex').value = ''
+  document.getElementById('modalName').value = ''
+  document.getElementById('modalKeywords').value = ''
+  document.getElementById('newCardModal').classList.add('visible')
+}
+function closeNewCardModal() {
+  document.getElementById('newCardModal').classList.remove('visible')
+}
+function addCardFromModal() {
+  const index = document.getElementById('modalIndex').value.trim()
+  const name = document.getElementById('modalName').value.trim()
+  const keywords = document.getElementById('modalKeywords').value.trim()
+  if (!index || !name) {
+    showInfoModal('Missing Fields','Index and Name are required.')
+    return
+  }
+  const c = {
+    index,
+    name,
+    front: '',
+    back: '',
+    keywords,
+    connections: '',
+    images: []
+  }
+  cards.push(c)
+  closeNewCardModal()
+  saveToLocalStorage()
+  renderSidebar()
+}
+function renderSidebar() {
+  const ul = document.getElementById('indexList').querySelector('ul')
+  ul.innerHTML = ''
+  cards.sort(compareCardIndexes)
+  cards.forEach(card => {
+    const li = document.createElement('li')
+    li.textContent = `${card.index} - ${card.name}`
+    li.addEventListener('click', () => {
+      selectedCard = card
+      showCardDetails(card)
+      renderSidebar()
     })
-    .catch(err => {
-      console.error("Fetch zetteldex.json error:", err);
-    });
+    if (selectedCard && selectedCard.index === card.index) {
+      li.classList.add('selected')
+    }
+    ul.appendChild(li)
+  })
 }
-
-function setupEvents() {
-  closeInfoModalBtn.addEventListener("click", () => {
-    infoModal.classList.remove("visible");
-  });
-
-  collapseAllBtn.addEventListener("click", () => {
-    handleExpansionForAll("false");
-  });
-
-  expandAllBtn.addEventListener("click", () => {
-    handleExpansionForAll("true");
-  });
-
-  indexList.addEventListener("click", e => {
-    if (e.target.classList.contains("collapse-arrow")) {
-      let li = e.target.closest("li");
-      let subUl = li.querySelector("ul");
-      if (subUl) {
-        let s = li.getAttribute("data-expanded") === "true";
-        li.setAttribute("data-expanded", s ? "false" : "true");
-        subUl.style.display = s ? "none" : "block";
-      }
-      handleArrowsRefresh();
-      e.stopPropagation();
-    } else if (e.target.closest(".collapse-toggle")) {
-      let li = e.target.closest("li");
-      indexList.querySelectorAll("li").forEach(x => x.classList.remove("selected"));
-      li.classList.add("selected");
-      let idx = li.querySelector(".index-number");
-      let nm = li.querySelector(".card-name");
-      if (idx && nm) {
-        loadCardDetails(idx.textContent.trim(), nm.textContent.trim());
-        selectedCardIndex = idx.textContent.trim();
-      }
-      e.stopPropagation();
-    }
-  });
-
-  [newCardBtn, newCardBtnHeader].forEach(b => {
-    b.addEventListener("click", () => {
-      modalIndex.value = "";
-      modalName.value = "";
-      modalKeywords.value = "";
-      newCardModal.classList.add("visible");
-      modalIndex.focus();
-    });
-  });
-
-  importJsonBtn.addEventListener("click", () => {
-    jsonImportFile.click();
-  });
-
-  cancelModalBtn.addEventListener("click", () => {
-    newCardModal.classList.remove("visible");
-  });
-
-  addCardBtn.addEventListener("click", () => {
-    let i = modalIndex.value.trim();
-    let n = modalName.value.trim();
-    let k = modalKeywords.value.trim();
-    if (i && n) {
-      cards[i] = { index: i, name: n, front: "", back: "", keywords: k, connections: "" };
-      // 2️⃣ Update localStorage so the new card is persisted
-      localStorage.setItem("zetteldex", JSON.stringify(cards));
-      newCardModal.classList.remove("visible");
-      showInfoModal("Card Added", "Index: " + i + "\nName: " + n);
-      buildIndexList();
-    } else {
-      showInfoModal("Incomplete Data", "Please enter both Index and Name.");
-    }
-  });
-
-  editBtn.addEventListener("click", () => {
-    setCardEditMode(true);
-  });
-
-  saveBtn.addEventListener("click", () => {
-    let i = detailIndex.value.trim();
-    if (!i) {
-      showInfoModal("Error", "Invalid card index.");
-      return;
-    }
-    cards[i] = {
-      index: detailIndex.value,
-      name: detailName.value,
-      front: detailFront.value,
-      back: detailBack.value,
-      keywords: detailKeywords.value,
-      connections: detailConnections.value
-    };
-    setCardEditMode(false);
-    // 3️⃣ Update localStorage on save
-    localStorage.setItem("zetteldex", JSON.stringify(cards));
-    showInfoModal("Success", "Your card was saved!");
-  });
-
-  deleteCardBtn.addEventListener("click", () => {
-    if (!selectedCardIndex) {
-      showInfoModal("No Card Selected", "Please select a card before deleting.");
-      return;
-    }
-    deleteCardModal.classList.add("visible");
-  });
-
-  cancelDeleteCardBtn.addEventListener("click", () => {
-    deleteCardModal.classList.remove("visible");
-  });
-
-  confirmDeleteCardBtn.addEventListener("click", () => {
-    if (!selectedCardIndex) {
-      showInfoModal("Error", "No card is selected.");
-      deleteCardModal.classList.remove("visible");
-      return;
-    }
-    deleteCardAndChildren(selectedCardIndex);
-    selectedCardIndex = null;
-    cardDetails.classList.remove("visible");
-    placeholderView.style.display = "block";
-    indexList.querySelectorAll("li").forEach(x => x.classList.remove("selected"));
-    deleteCardModal.classList.remove("visible");
-    showInfoModal("Deleted", "Card and any child cards removed.");
-    // 4️⃣ Update localStorage so the deletion is persisted
-    localStorage.setItem("zetteldex", JSON.stringify(cards));
-    buildIndexList();
-  });
-
-  cameraBtn.addEventListener("click", () => {
-    showInfoModal("Feature Coming Soon", "You'll be able to upload images.");
-  });
-
-  importBtn.addEventListener("click", () => {
-    jsonImportFile.click();
-  });
-
-  jsonImportFile.addEventListener("change", e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = h => {
-      try {
-        const d = JSON.parse(h.target.result);
-        // Merge new data into existing cards
-        cards = { ...cards, ...d };
-        // Update localStorage with merged data
-        localStorage.setItem("zetteldex", JSON.stringify(cards));
-        showInfoModal("Import JSON", "JSON imported and merged into cards.");
-        buildIndexList();
-      } catch (i) {
-        showInfoModal("Error", "Invalid JSON file.");
-      }
-    };
-    r.readAsText(f);
-  });
-
-  exportBtn.addEventListener("click", () => {
-    let s = JSON.stringify(cards, null, 2);
-    const blob = new Blob([s], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    // 5️⃣ Always export as zetteldex.json
-    a.download = "zetteldex.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    showInfoModal("Export JSON", "Your data has been exported as zetteldex.json!");
-  });
+function showCardDetails(card) {
+  document.getElementById('placeholderView').style.display = 'none'
+  const cd = document.getElementById('cardDetails')
+  cd.classList.add('visible')
+  document.getElementById('cardTitle').textContent = card.name || '[No Title]'
+  document.getElementById('detailIndex').value = card.index
+  document.getElementById('detailName').value = card.name
+  document.getElementById('detailFront').value = card.front || ''
+  document.getElementById('detailBack').value = card.back || ''
+  document.getElementById('detailKeywords').value = card.keywords || ''
+  document.getElementById('detailConnections').value = card.connections || ''
+  exitEditMode()
+  renderImageGallery(card)
 }
-
-/*******************************************************
- * HELPER FUNCTIONS
- *******************************************************/
-
-/**
- * Show a simple info modal.
- */
+function renderImageGallery(card) {
+  const gal = document.getElementById('imageGallery')
+  gal.innerHTML = ''
+  if (!card.images || card.images.length === 0) return
+  card.images.forEach((imgSrc, i) => {
+    const thumb = document.createElement('img')
+    thumb.className = 'image-thumb'
+    thumb.src = imgSrc
+    thumb.addEventListener('click', () => openImageViewer(i))
+    gal.appendChild(thumb)
+  })
+}
+function enterEditMode() {
+  if (!selectedCard) return
+  document.getElementById('detailIndex').readOnly = false
+  document.getElementById('detailName').readOnly = false
+  document.getElementById('detailFront').readOnly = false
+  document.getElementById('detailBack').readOnly = false
+  document.getElementById('detailKeywords').readOnly = false
+  document.getElementById('detailConnections').readOnly = false
+  document.getElementById('saveBtn').style.display = 'inline-flex'
+}
+function exitEditMode() {
+  document.getElementById('detailIndex').readOnly = true
+  document.getElementById('detailName').readOnly = true
+  document.getElementById('detailFront').readOnly = true
+  document.getElementById('detailBack').readOnly = true
+  document.getElementById('detailKeywords').readOnly = true
+  document.getElementById('detailConnections').readOnly = true
+  document.getElementById('saveBtn').style.display = 'none'
+}
+function saveCardChanges() {
+  if (!selectedCard) return
+  selectedCard.index = document.getElementById('detailIndex').value.trim()
+  selectedCard.name = document.getElementById('detailName').value.trim()
+  selectedCard.front = document.getElementById('detailFront').value
+  selectedCard.back = document.getElementById('detailBack').value
+  selectedCard.keywords = document.getElementById('detailKeywords').value.trim()
+  selectedCard.connections = document.getElementById('detailConnections').value.trim()
+  exitEditMode()
+  saveToLocalStorage()
+  renderSidebar()
+  showCardDetails(selectedCard)
+}
+function openDeleteModal() {
+  if (!selectedCard) {
+    showInfoModal('No Card Selected','Please select a card to delete.')
+    return
+  }
+  document.getElementById('deleteCardModal').classList.add('visible')
+}
+function closeDeleteModal() {
+  document.getElementById('deleteCardModal').classList.remove('visible')
+}
+function confirmDeleteCard() {
+  if (!selectedCard) return
+  removeCard(selectedCard.index)
+  selectedCard = null
+  closeDeleteModal()
+  saveToLocalStorage()
+  renderSidebar()
+  showPlaceholder()
+}
+function removeCard(idx) {
+  for (let i = 0; i < cards.length; i++) {
+    if (cards[i].index === idx) {
+      cards.splice(i,1)
+      return
+    }
+  }
+}
+function handleImport(e) {
+  const f = e.target.files[0]
+  if (!f) return
+  const r = new FileReader()
+  r.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result)
+      if (Array.isArray(imported)) {
+        cards = imported
+        saveToLocalStorage()
+        renderSidebar()
+        showPlaceholder()
+      } else {
+        showInfoModal('Import Error','JSON format not recognized.')
+      }
+    } catch (err) {
+      showInfoModal('Import Error', err.message)
+    }
+  }
+  r.readAsText(f)
+  e.target.value = ''
+}
+function exportToJson() {
+  const data = JSON.stringify(cards, null, 2)
+  const b = new Blob([data], { type: 'application/json' })
+  const u = URL.createObjectURL(b)
+  const a = document.createElement('a')
+  a.href = u
+  a.download = 'zettel-dex.json'
+  a.click()
+  URL.revokeObjectURL(u)
+}
+function loadFromLocalStorage() {
+  const d = localStorage.getItem('zetteldexData')
+  if (d) {
+    try {
+      cards = JSON.parse(d)
+    } catch (e) {
+      cards = []
+    }
+  }
+}
+function saveToLocalStorage() {
+  localStorage.setItem('zetteldexData', JSON.stringify(cards))
+}
 function showInfoModal(t, m) {
-  infoModalTitle.textContent = t || "";
-  infoModalMessage.textContent = m || "";
-  infoModal.classList.add("visible");
+  document.getElementById('infoModalTitle').textContent = t
+  document.getElementById('infoModalMessage').textContent = m
+  document.getElementById('infoModal').classList.add('visible')
 }
-
-/**
- * Load details for a selected card.
- */
-function loadCardDetails(i, n) {
-  placeholderView.style.display = "none";
-  cardDetails.classList.add("visible");
-  if (cards[i]) {
-    detailIndex.value = cards[i].index;
-    detailName.value = cards[i].name;
-    detailFront.value = cards[i].front || "";
-    detailBack.value = cards[i].back || "";
-    detailKeywords.value = cards[i].keywords || "";
-    detailConnections.value = cards[i].connections || "";
-    cardTitle.textContent = cards[i].name;
-  } else {
-    detailIndex.value = i;
-    detailName.value = n;
-    detailFront.value = "";
-    detailBack.value = "";
-    detailKeywords.value = "";
-    detailConnections.value = "";
-    cardTitle.textContent = n;
+function closeInfoModal() {
+  document.getElementById('infoModal').classList.remove('visible')
+}
+function compareCardIndexes(a,b) {
+  return a.index.localeCompare(b.index, undefined, { numeric: true, sensitivity: 'base' })
+}
+function filterCards(q) {
+  const ul = document.getElementById('indexList').querySelector('ul')
+  ul.innerHTML = ''
+  if (!q) {
+    renderSidebar()
+    return
   }
-  setCardEditMode(false);
+  const fq = q.toLowerCase()
+  const filtered = cards.filter(c => {
+    const s = (c.index + ' ' + c.name + ' ' + (c.keywords||'')).toLowerCase()
+    return s.includes(fq)
+  })
+  filtered.sort(compareCardIndexes)
+  filtered.forEach(card => {
+    const li = document.createElement('li')
+    li.textContent = `${card.index} - ${card.name}`
+    li.addEventListener('click', () => {
+      selectedCard = card
+      showCardDetails(card)
+      filterCards(q)
+    })
+    if (selectedCard && selectedCard.index === card.index) {
+      li.classList.add('selected')
+    }
+    ul.appendChild(li)
+  })
 }
-
-/**
- * Toggle between read-only and edit mode on the details.
- */
-function setCardEditMode(e) {
-  detailIndex.readOnly = !e;
-  detailName.readOnly = !e;
-  detailFront.readOnly = !e;
-  detailBack.readOnly = !e;
-  detailKeywords.readOnly = !e;
-  detailConnections.readOnly = !e;
-  editBtn.style.display = e ? "none" : "inline-block";
-  saveBtn.style.display = e ? "inline-block" : "none";
+function startSidebarResize(e) {
+  isResizing = true
+  document.addEventListener('mousemove', resizeSidebar)
+  document.addEventListener('mouseup', stopSidebarResize)
 }
-
-/**
- * Our new parseIndex() that treats each digit as a "folder".
- * - Removes dots entirely
- * - Splits each character into an array
- *
- * "1110" => ["1","1","1","0"]
- * "1111" => ["1","1","1","1"]
- * "1110.1" => "11101" => ["1","1","1","0","1"]
- */
-function parseIndex(str) {
-  // Remove dots, then split each digit
-  let noDots = str.replace(/\./g, "");
-  return noDots.split("");
+function resizeSidebar(e) {
+  if (!isResizing) return
+  const sb = document.querySelector('.sidebar')
+  const nw = Math.min(Math.max(e.clientX, 200), window.innerWidth * 0.6)
+  sb.style.width = nw + 'px'
 }
-
-/**
- * A helper to see if `prefix` is indeed a prefix of `arr`.
- * i.e. prefix = ["1","1","1"], arr = ["1","1","1","0"] => true
- */
-function isPrefixArray(prefix, arr) {
-  if (arr.length < prefix.length) return false;
-  for (let i = 0; i < prefix.length; i++) {
-    if (prefix[i] !== arr[i]) return false;
+function stopSidebarResize() {
+  isResizing = false
+  document.removeEventListener('mousemove', resizeSidebar)
+  document.removeEventListener('mouseup', stopSidebarResize)
+}
+function openPhotoOptions() {
+  if (!selectedCard) {
+    showInfoModal('No Card Selected','Please select a card first.')
+    return
   }
-  return true;
+  document.getElementById('photoOptionsModal').classList.add('visible')
 }
-
-/**
- * Build the nested index list.
- */
-function buildIndexList() {
-  let u = indexList.querySelector("ul");
-  u.innerHTML = "";
-
-  function buildNestedTree(allIndexes) {
-    let root = {};
-
-    // Sort indexes in a natural ascending style
-    let sorted = allIndexes.slice().sort((a, b) => {
-      let aParsed = parseIndex(a);
-      let bParsed = parseIndex(b);
-      // Compare digit by digit
-      for (let i = 0; i < Math.max(aParsed.length, bParsed.length); i++) {
-        let aNum = parseInt(aParsed[i] || "0", 10) || 0;
-        let bNum = parseInt(bParsed[i] || "0", 10) || 0;
-        if (aNum !== bNum) return aNum - bNum;
-      }
-      return 0;
-    });
-
-    // Build a nested tree object
-    for (let idx of sorted) {
-      let levels = parseIndex(idx);
-      let curr = root;
-      let pathSoFar = [];
-      for (let lv of levels) {
-        pathSoFar.push(lv);
-        let key = pathSoFar.join("_");
-        if (!curr[key]) {
-          curr[key] = { actualIndex: idx, children: {} };
-        }
-        curr = curr[key].children;
-      }
-    }
-    return root;
+function handleImageInput(e) {
+  const file = e.target.files[0]
+  document.getElementById('photoOptionsModal').classList.remove('visible')
+  e.target.value = ''
+  if (!file || !selectedCard) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    if (!selectedCard.images) selectedCard.images = []
+    selectedCard.images.push(ev.target.result)
+    saveToLocalStorage()
+    showCardDetails(selectedCard)
   }
-
-  function createNestedLi(nodeObj, parentUl) {
-    let li = document.createElement("li");
-    li.setAttribute("data-expanded", "false");
-
-    let div = document.createElement("div");
-    div.classList.add("collapse-toggle");
-
-    let arrow = document.createElement("span");
-    arrow.classList.add("collapse-arrow");
-
-    let childKeys = Object.keys(nodeObj.children);
-    // Filter out self-duplicates
-    childKeys = childKeys.filter(
-      k => nodeObj.children[k].actualIndex !== nodeObj.actualIndex
-    );
-
-    arrow.textContent = childKeys.length > 0 ? "▶" : "";
-
-    let cardData = cards[nodeObj.actualIndex];
-    let indexSpan = document.createElement("span");
-    indexSpan.classList.add("index-number");
-    indexSpan.textContent = cardData ? cardData.index : nodeObj.actualIndex;
-
-    let nameSpan = document.createElement("span");
-    nameSpan.classList.add("card-name");
-    nameSpan.textContent = cardData ? cardData.name : nodeObj.actualIndex;
-
-    div.appendChild(arrow);
-    div.appendChild(indexSpan);
-    div.appendChild(nameSpan);
-    li.appendChild(div);
-    parentUl.appendChild(li);
-
-    if (childKeys.length > 0) {
-      let subUl = document.createElement("ul");
-      subUl.style.display = "none";
-      childKeys.forEach(k => {
-        createNestedLi(nodeObj.children[k], subUl);
-      });
-      li.appendChild(subUl);
-    }
-  }
-
-  let tree = buildNestedTree(Object.keys(cards));
-  Object.keys(tree).forEach(topKey => {
-    createNestedLi(tree[topKey], u);
-  });
-  handleArrowsRefresh();
+  reader.readAsDataURL(file)
 }
-
-/**
- * Collapse or expand all indexes.
- */
-function handleExpansionForAll(e) {
-  setAllExpansion(e);
-  handleArrowsRefresh();
+function openImageViewer(i) {
+  currentImageIndex = i
+  showImageAt(currentImageIndex)
+  document.getElementById('imageViewerModal').classList.add('visible')
 }
-
-function setAllExpansion(e) {
-  indexList.querySelectorAll("li").forEach(li => {
-    li.setAttribute("data-expanded", e);
-    let c = li.querySelector("ul");
-    if (c) {
-      c.style.display = e === "true" ? "block" : "none";
-    }
-  });
+function showImageAt(i) {
+  if (!selectedCard || !selectedCard.images) return
+  const len = selectedCard.images.length
+  if (i < 0) i = len - 1
+  if (i >= len) i = 0
+  currentImageIndex = i
+  document.getElementById('viewerImage').src = selectedCard.images[currentImageIndex]
 }
-
-/**
- * Update the arrow symbols after expansions/collapses.
- */
-function handleArrowsRefresh() {
-  indexList.querySelectorAll("li").forEach(li => {
-    let arrow = li.querySelector(".collapse-arrow");
-    let subUl = li.querySelector("ul");
-    if (!arrow) return;
-    if (!subUl) {
-      arrow.textContent = "";
-      arrow.style.cursor = "default";
-    } else {
-      arrow.textContent = li.getAttribute("data-expanded") === "true" ? "▼" : "▶";
-    }
-  });
+function closeImageViewer() {
+  document.getElementById('imageViewerModal').classList.remove('visible')
 }
-
-/**
- * Delete the "folder" (minus its last digit) and everything inside it.
- * If "1110" => expansions ["1","1","1","0"],
- * we remove the last chunk => ["1","1","1"] => that is the "parent folder".
- * Then ANY index that starts with ["1","1","1"] gets deleted.
- */
-function deleteCardAndChildren(idx) {
-  // 1. parse the expansions of the selected index
-  const expansions = parseIndex(idx);
-  // 2. remove the last digit => treat that as the "folder path" we want to nuke
-  expansions.pop(); // e.g. "1110" => ["1","1","1","0"] => pop => ["1","1","1"]
-
-  // 3. Filter all cards that start with those expansions
-  const keysToDelete = Object.keys(cards).filter(key => {
-    const childExp = parseIndex(key);
-    return isPrefixArray(expansions, childExp);
-  });
-
-  // 4. Delete them all
-  keysToDelete.forEach(k => delete cards[k]);
-}
-
-/*******************************************************
- * LAUNCH
- *******************************************************/
-window.addEventListener("DOMContentLoaded", init);
+let isResizing = false
