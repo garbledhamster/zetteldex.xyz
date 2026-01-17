@@ -8,6 +8,7 @@ let isDragging = false
 let startX = 0
 let startY = 0
 let isEditMode = false
+const HIERARCHY_THRESHOLD = 1000
 document.addEventListener('DOMContentLoaded', () => {
   feather.replace()
   loadFromLocalStorage()
@@ -417,7 +418,6 @@ function applyTransform() {
 
 // Function to extract parent indexes from a card index
 function getParentIndexes(cardIndex) {
-  const HIERARCHY_THRESHOLD = 1000
   const parents = []
   let currentIndex = cardIndex.trim()
   
