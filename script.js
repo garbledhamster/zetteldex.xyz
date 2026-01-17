@@ -9,6 +9,8 @@ let isDragging = false
 let startX = 0
 let startY = 0
 let isEditMode = false
+let viewMode = 'zettel'
+let isResizing = false
 const HIERARCHY_THRESHOLD = 1000
 document.addEventListener('DOMContentLoaded', () => {
   feather.replace()
