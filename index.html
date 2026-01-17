@@ -30,6 +30,9 @@
         <button id="homeBtn" class="icon-button">
           <i data-feather="home"></i>
         </button>
+        <button id="toggleViewModeBtn" class="icon-button" title="Toggle Zettel/Bibliography">
+          <i data-feather="book-open"></i>
+        </button>
         <button id="newCardBtnHeader" class="icon-button">
           <i data-feather="file-plus"></i>
         </button>
@@ -75,29 +78,57 @@
             </button>
           </div>
         </div>
-        <div class="card-field">
-          <label for="detailIndex">Index:</label>
-          <input id="detailIndex" type="text" readonly>
+        <div id="zettelFields">
+          <div class="card-field">
+            <label for="detailIndex">Index:</label>
+            <input id="detailIndex" type="text" readonly>
+          </div>
+          <div class="card-field">
+            <label for="detailName">Name:</label>
+            <input id="detailName" type="text" readonly>
+          </div>
+          <div class="card-field">
+            <label for="detailFront">Front (Notes):</label>
+            <textarea id="detailFront" rows="3" readonly></textarea>
+          </div>
+          <div class="card-field">
+            <label for="detailBack">Back (Aux):</label>
+            <textarea id="detailBack" rows="3" readonly></textarea>
+          </div>
+          <div class="card-field">
+            <label for="detailKeywords">Keywords:</label>
+            <input id="detailKeywords" type="text" readonly>
+          </div>
+          <div class="card-field">
+            <label for="detailConnections">Connections:</label>
+            <input id="detailConnections" type="text" readonly>
+          </div>
         </div>
-        <div class="card-field">
-          <label for="detailName">Name:</label>
-          <input id="detailName" type="text" readonly>
-        </div>
-        <div class="card-field">
-          <label for="detailFront">Front (Notes):</label>
-          <textarea id="detailFront" rows="3" readonly></textarea>
-        </div>
-        <div class="card-field">
-          <label for="detailBack">Back (Aux):</label>
-          <textarea id="detailBack" rows="3" readonly></textarea>
-        </div>
-        <div class="card-field">
-          <label for="detailKeywords">Keywords:</label>
-          <input id="detailKeywords" type="text" readonly>
-        </div>
-        <div class="card-field">
-          <label for="detailConnections">Connections:</label>
-          <input id="detailConnections" type="text" readonly>
+        <div id="bibFields" style="display: none;">
+          <div class="card-field">
+            <label for="detailAuthor">Author:</label>
+            <input id="detailAuthor" type="text" readonly>
+          </div>
+          <div class="card-field">
+            <label for="detailBibTitle">Title:</label>
+            <input id="detailBibTitle" type="text" readonly>
+          </div>
+          <div class="card-field">
+            <label for="detailSubtitle">Subtitle:</label>
+            <input id="detailSubtitle" type="text" readonly>
+          </div>
+          <div class="card-field">
+            <label for="detailYear">Year:</label>
+            <input id="detailYear" type="text" readonly>
+          </div>
+          <div class="card-field">
+            <label for="detailSummary">Summary:</label>
+            <textarea id="detailSummary" rows="3" readonly></textarea>
+          </div>
+          <div class="card-field">
+            <label for="detailGoal">Goal:</label>
+            <textarea id="detailGoal" rows="3" readonly></textarea>
+          </div>
         </div>
         <div class="image-gallery" id="imageGallery"></div>
         <button class="save-button" id="saveBtn" style="display:none">
@@ -120,6 +151,25 @@
       <div class="modal-actions">
         <button class="cancel-btn" id="cancelModalBtn">Cancel</button>
         <button class="add-btn" id="addCardBtn">Add Card</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: New Bibliography Card -->
+  <div class="modal" id="newBibCardModal">
+    <div class="modal-content">
+      <h3>Create a New Bibliography Card</h3>
+      <label for="modalAuthor">Author:</label>
+      <input type="text" id="modalAuthor" placeholder="e.g. John Doe">
+      <label for="modalTitle">Title:</label>
+      <input type="text" id="modalTitle" placeholder="e.g. The Art of Writing">
+      <label for="modalSubtitle">Subtitle:</label>
+      <input type="text" id="modalSubtitle" placeholder="e.g. A Comprehensive Guide">
+      <label for="modalYear">Year:</label>
+      <input type="text" id="modalYear" placeholder="e.g. 2024">
+      <div class="modal-actions">
+        <button class="cancel-btn" id="cancelBibModalBtn">Cancel</button>
+        <button class="add-btn" id="addBibCardBtn">Add Card</button>
       </div>
     </div>
   </div>

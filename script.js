@@ -1,4 +1,5 @@
 let cards = []
+let bibCards = []
 let selectedCard = null
 let currentImageIndex = 0
 let scale = 1
@@ -15,12 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSidebar()
   setupListeners()
   showPlaceholder()
+  updateViewModeUI()
 })
 function setupListeners() {
   document.getElementById('homeBtn').addEventListener('click', () => {
     selectedCard = null
     showPlaceholder()
   })
+  document.getElementById('toggleViewModeBtn').addEventListener('click', toggleViewMode)
   document.getElementById('newCardBtn').addEventListener('click', openNewCardModal)
   document.getElementById('newCardBtnHeader').addEventListener('click', openNewCardModal)
   document.getElementById('deleteCardBtn').addEventListener('click', openDeleteModal)
@@ -36,6 +39,8 @@ function setupListeners() {
   })
   document.getElementById('cancelModalBtn').addEventListener('click', closeNewCardModal)
   document.getElementById('addCardBtn').addEventListener('click', addCardFromModal)
+  document.getElementById('cancelBibModalBtn').addEventListener('click', closeNewCardModal)
+  document.getElementById('addBibCardBtn').addEventListener('click', addBibCardFromModal)
   document.getElementById('editBtn').addEventListener('click', toggleEditMode)
   document.getElementById('saveBtn').addEventListener('click', saveCardChanges)
   document.getElementById('closeInfoModalBtn').addEventListener('click', closeInfoModal)
@@ -96,14 +101,41 @@ function showPlaceholder() {
   document.getElementById('placeholderView').style.display = 'block'
   document.getElementById('cardDetails').classList.remove('visible')
 }
+function toggleViewMode() {
+  viewMode = viewMode === 'zettel' ? 'bibliography' : 'zettel'
+  selectedCard = null
+  updateViewModeUI()
+  renderSidebar()
+  showPlaceholder()
+}
+function updateViewModeUI() {
+  const btn = document.getElementById('newCardBtnHeader')
+  const placeholderBtn = document.getElementById('newCardBtn')
+  if (viewMode === 'bibliography') {
+    btn.setAttribute('title', 'Add Bibliography Card')
+    placeholderBtn.textContent = 'Make new bibliography card'
+  } else {
+    btn.setAttribute('title', 'Add Zettel Card')
+    placeholderBtn.textContent = 'Make new card'
+  }
+}
 function openNewCardModal() {
-  document.getElementById('modalIndex').value = ''
-  document.getElementById('modalName').value = ''
-  document.getElementById('modalKeywords').value = ''
-  document.getElementById('newCardModal').classList.add('visible')
+  if (viewMode === 'bibliography') {
+    document.getElementById('modalAuthor').value = ''
+    document.getElementById('modalTitle').value = ''
+    document.getElementById('modalSubtitle').value = ''
+    document.getElementById('modalYear').value = ''
+    document.getElementById('newBibCardModal').classList.add('visible')
+  } else {
+    document.getElementById('modalIndex').value = ''
+    document.getElementById('modalName').value = ''
+    document.getElementById('modalKeywords').value = ''
+    document.getElementById('newCardModal').classList.add('visible')
+  }
 }
 function closeNewCardModal() {
   document.getElementById('newCardModal').classList.remove('visible')
+  document.getElementById('newBibCardModal').classList.remove('visible')
 }
 function addCardFromModal() {
   const index = document.getElementById('modalIndex').value.trim()
@@ -127,13 +159,45 @@ function addCardFromModal() {
   saveToLocalStorage()
   renderSidebar()
 }
+function addBibCardFromModal() {
+  const author = document.getElementById('modalAuthor').value.trim()
+  const title = document.getElementById('modalTitle').value.trim()
+  const subtitle = document.getElementById('modalSubtitle').value.trim()
+  const year = document.getElementById('modalYear').value.trim()
+  if (!author || !title) {
+    showInfoModal('Missing Fields','Author and Title are required.')
+    return
+  }
+  const c = {
+    author,
+    title,
+    subtitle,
+    year,
+    summary: '',
+    goal: '',
+    images: []
+  }
+  bibCards.push(c)
+  closeNewCardModal()
+  saveToLocalStorage()
+  renderSidebar()
+}
 function renderSidebar() {
   const ul = document.getElementById('indexList').querySelector('ul')
   ul.innerHTML = ''
-  cards.sort(compareCardIndexes)
-  cards.forEach(card => {
+  const currentCards = viewMode === 'zettel' ? cards : bibCards
+  if (viewMode === 'zettel') {
+    currentCards.sort(compareCardIndexes)
+  } else {
+    currentCards.sort((a, b) => (a.author + a.title).localeCompare(b.author + b.title))
+  }
+  currentCards.forEach(card => {
     const li = document.createElement('li')
-    li.textContent = `${card.index} - ${card.name}`
+    if (viewMode === 'zettel') {
+      li.textContent = `${card.index} - ${card.name}`
+    } else {
+      li.textContent = `${card.author} - ${card.title}`
+    }
     li.addEventListener('click', () => {
       selectedCard = card
       showCardDetails(card)
@@ -153,13 +217,29 @@ function showCardDetails(card) {
   document.getElementById('placeholderView').style.display = 'none'
   const cd = document.getElementById('cardDetails')
   cd.classList.add('visible')
-  document.getElementById('cardTitle').textContent = card.name || '[No Title]'
-  document.getElementById('detailIndex').value = card.index
-  document.getElementById('detailName').value = card.name
-  document.getElementById('detailFront').value = card.front || ''
-  document.getElementById('detailBack').value = card.back || ''
-  document.getElementById('detailKeywords').value = card.keywords || ''
-  document.getElementById('detailConnections').value = card.connections || ''
+  
+  if (viewMode === 'zettel') {
+    document.getElementById('cardTitle').textContent = card.name || '[No Title]'
+    document.getElementById('zettelFields').style.display = 'block'
+    document.getElementById('bibFields').style.display = 'none'
+    document.getElementById('detailIndex').value = card.index
+    document.getElementById('detailName').value = card.name
+    document.getElementById('detailFront').value = card.front || ''
+    document.getElementById('detailBack').value = card.back || ''
+    document.getElementById('detailKeywords').value = card.keywords || ''
+    document.getElementById('detailConnections').value = card.connections || ''
+  } else {
+    document.getElementById('cardTitle').textContent = card.title || '[No Title]'
+    document.getElementById('zettelFields').style.display = 'none'
+    document.getElementById('bibFields').style.display = 'block'
+    document.getElementById('detailAuthor').value = card.author
+    document.getElementById('detailBibTitle').value = card.title
+    document.getElementById('detailSubtitle').value = card.subtitle || ''
+    document.getElementById('detailYear').value = card.year || ''
+    document.getElementById('detailSummary').value = card.summary || ''
+    document.getElementById('detailGoal').value = card.goal || ''
+  }
+  
   exitEditMode()
   renderImageGallery(card)
 }
@@ -203,34 +283,61 @@ function toggleEditMode() {
 function enterEditMode() {
   if (!selectedCard) return
   isEditMode = true
-  document.getElementById('detailIndex').readOnly = false
-  document.getElementById('detailName').readOnly = false
-  document.getElementById('detailFront').readOnly = false
-  document.getElementById('detailBack').readOnly = false
-  document.getElementById('detailKeywords').readOnly = false
-  document.getElementById('detailConnections').readOnly = false
+  if (viewMode === 'zettel') {
+    document.getElementById('detailIndex').readOnly = false
+    document.getElementById('detailName').readOnly = false
+    document.getElementById('detailFront').readOnly = false
+    document.getElementById('detailBack').readOnly = false
+    document.getElementById('detailKeywords').readOnly = false
+    document.getElementById('detailConnections').readOnly = false
+  } else {
+    document.getElementById('detailAuthor').readOnly = false
+    document.getElementById('detailBibTitle').readOnly = false
+    document.getElementById('detailSubtitle').readOnly = false
+    document.getElementById('detailYear').readOnly = false
+    document.getElementById('detailSummary').readOnly = false
+    document.getElementById('detailGoal').readOnly = false
+  }
   document.getElementById('saveBtn').style.display = 'inline-flex'
   renderImageGallery(selectedCard)
 }
 function exitEditMode() {
   isEditMode = false
-  document.getElementById('detailIndex').readOnly = true
-  document.getElementById('detailName').readOnly = true
-  document.getElementById('detailFront').readOnly = true
-  document.getElementById('detailBack').readOnly = true
-  document.getElementById('detailKeywords').readOnly = true
-  document.getElementById('detailConnections').readOnly = true
+  if (viewMode === 'zettel') {
+    document.getElementById('detailIndex').readOnly = true
+    document.getElementById('detailName').readOnly = true
+    document.getElementById('detailFront').readOnly = true
+    document.getElementById('detailBack').readOnly = true
+    document.getElementById('detailKeywords').readOnly = true
+    document.getElementById('detailConnections').readOnly = true
+  } else {
+    document.getElementById('detailAuthor').readOnly = true
+    document.getElementById('detailBibTitle').readOnly = true
+    document.getElementById('detailSubtitle').readOnly = true
+    document.getElementById('detailYear').readOnly = true
+    document.getElementById('detailSummary').readOnly = true
+    document.getElementById('detailGoal').readOnly = true
+  }
   document.getElementById('saveBtn').style.display = 'none'
   renderImageGallery(selectedCard)
 }
 function saveCardChanges() {
   if (!selectedCard) return
-  selectedCard.index = document.getElementById('detailIndex').value.trim()
-  selectedCard.name = document.getElementById('detailName').value.trim()
-  selectedCard.front = document.getElementById('detailFront').value
-  selectedCard.back = document.getElementById('detailBack').value
-  selectedCard.keywords = document.getElementById('detailKeywords').value.trim()
-  selectedCard.connections = document.getElementById('detailConnections').value.trim()
+  if (viewMode === 'zettel') {
+    selectedCard.index = document.getElementById('detailIndex').value.trim()
+    selectedCard.name = document.getElementById('detailName').value.trim()
+    selectedCard.front = document.getElementById('detailFront').value
+    selectedCard.back = document.getElementById('detailBack').value
+    selectedCard.keywords = document.getElementById('detailKeywords').value.trim()
+    selectedCard.connections = document.getElementById('detailConnections').value.trim()
+  } else {
+    selectedCard.author = document.getElementById('detailAuthor').value.trim()
+    selectedCard.title = document.getElementById('detailBibTitle').value.trim()
+    selectedCard.subtitle = document.getElementById('detailSubtitle').value.trim()
+    selectedCard.year = document.getElementById('detailYear').value.trim()
+    selectedCard.summary = document.getElementById('detailSummary').value
+    selectedCard.goal = document.getElementById('detailGoal').value
+  }
   exitEditMode()
   saveToLocalStorage()
   renderSidebar()
@@ -248,7 +355,11 @@ function closeDeleteModal() {
 }
 function confirmDeleteCard() {
   if (!selectedCard) return
-  removeCard(selectedCard.index)
+  if (viewMode === 'zettel') {
+    removeCard(selectedCard.index)
+  } else {
+    removeBibCard(selectedCard.author, selectedCard.title)
+  }
   selectedCard = null
   closeDeleteModal()
   saveToLocalStorage()
@@ -263,6 +374,14 @@ function removeCard(idx) {
     }
   }
 }
+function removeBibCard(author, title) {
+  for (let i = 0; i < bibCards.length; i++) {
+    if (bibCards[i].author === author && bibCards[i].title === title) {
+      bibCards.splice(i,1)
+      return
+    }
+  }
+}
 function handleImport(e) {
   const f = e.target.files[0]
   if (!f) return
@@ -271,7 +390,11 @@ function handleImport(e) {
     try {
       const imported = JSON.parse(ev.target.result)
       if (Array.isArray(imported)) {
-        cards = imported
+        if (viewMode === 'zettel') {
+          cards = imported
+        } else {
+          bibCards = imported
+        }
         saveToLocalStorage()
         renderSidebar()
         showPlaceholder()
@@ -286,12 +409,13 @@ function handleImport(e) {
   e.target.value = ''
 }
 function exportToJson() {
-  const data = JSON.stringify(cards, null, 2)
+  const currentData = viewMode === 'zettel' ? cards : bibCards
+  const data = JSON.stringify(currentData, null, 2)
   const b = new Blob([data], { type: 'application/json' })
   const u = URL.createObjectURL(b)
   const a = document.createElement('a')
   a.href = u
-  a.download = 'zettel-dex.json'
+  a.download = viewMode === 'zettel' ? 'zettel-dex.json' : 'bibliography-dex.json'
   a.click()
   URL.revokeObjectURL(u)
 }
@@ -304,9 +428,18 @@ function loadFromLocalStorage() {
       cards = []
     }
   }
+  const bd = localStorage.getItem('bibCardsData')
+  if (bd) {
+    try {
+      bibCards = JSON.parse(bd)
+    } catch (e) {
+      bibCards = []
+    }
+  }
 }
 function saveToLocalStorage() {
   localStorage.setItem('zetteldexData', JSON.stringify(cards))
+  localStorage.setItem('bibCardsData', JSON.stringify(bibCards))
 }
 function showInfoModal(t, m) {
   document.getElementById('infoModalTitle').textContent = t
@@ -327,14 +460,28 @@ function filterCards(q) {
     return
   }
   const fq = q.toLowerCase()
-  const filtered = cards.filter(c => {
-    const s = (c.index + ' ' + c.name + ' ' + (c.keywords||'')).toLowerCase()
-    return s.includes(fq)
+  const currentCards = viewMode === 'zettel' ? cards : bibCards
+  const filtered = currentCards.filter(c => {
+    if (viewMode === 'zettel') {
+      const s = (c.index + ' ' + c.name + ' ' + (c.keywords||'')).toLowerCase()
+      return s.includes(fq)
+    } else {
+      const s = (c.author + ' ' + c.title + ' ' + (c.subtitle||'')).toLowerCase()
+      return s.includes(fq)
+    }
   })
-  filtered.sort(compareCardIndexes)
+  if (viewMode === 'zettel') {
+    filtered.sort(compareCardIndexes)
+  } else {
+    filtered.sort((a, b) => (a.author + a.title).localeCompare(b.author + b.title))
+  }
   filtered.forEach(card => {
     const li = document.createElement('li')
-    li.textContent = `${card.index} - ${card.name}`
+    if (viewMode === 'zettel') {
+      li.textContent = `${card.index} - ${card.name}`
+    } else {
+      li.textContent = `${card.author} - ${card.title}`
+    }
     li.addEventListener('click', () => {
       selectedCard = card
       showCardDetails(card)
