@@ -140,23 +140,7 @@ function renderSidebar() {
     })
     
     // Add tooltip event listeners
-    li.addEventListener('mouseenter', (e) => {
-      const tooltipContent = buildTooltipContent(card.index)
-      if (tooltipContent) {
-        showTooltip(e, tooltipContent)
-      }
-    })
-    li.addEventListener('mouseleave', () => {
-      hideTooltip()
-    })
-    li.addEventListener('mousemove', (e) => {
-      // Update tooltip position as mouse moves
-      const tooltip = document.getElementById('cardTooltip')
-      if (tooltip && tooltip.style.display === 'block') {
-        tooltip.style.left = (e.clientX + 10) + 'px'
-        tooltip.style.top = (e.clientY + 10) + 'px'
-      }
-    })
+    addTooltipEventListeners(li, card)
     
     if (selectedCard && selectedCard.index === card.index) {
       li.classList.add('selected')
@@ -357,23 +341,7 @@ function filterCards(q) {
     })
     
     // Add tooltip event listeners
-    li.addEventListener('mouseenter', (e) => {
-      const tooltipContent = buildTooltipContent(card.index)
-      if (tooltipContent) {
-        showTooltip(e, tooltipContent)
-      }
-    })
-    li.addEventListener('mouseleave', () => {
-      hideTooltip()
-    })
-    li.addEventListener('mousemove', (e) => {
-      // Update tooltip position as mouse moves
-      const tooltip = document.getElementById('cardTooltip')
-      if (tooltip && tooltip.style.display === 'block') {
-        tooltip.style.left = (e.clientX + 10) + 'px'
-        tooltip.style.top = (e.clientY + 10) + 'px'
-      }
-    })
+    addTooltipEventListeners(li, card)
     
     if (selectedCard && selectedCard.index === card.index) {
       li.classList.add('selected')
@@ -449,6 +417,7 @@ function applyTransform() {
 
 // Function to extract parent indexes from a card index
 function getParentIndexes(cardIndex) {
+  const HIERARCHY_THRESHOLD = 1000
   const parents = []
   let currentIndex = cardIndex.trim()
   
@@ -472,9 +441,9 @@ function getParentIndexes(cardIndex) {
     const numMatch = currentIndex.match(/^(\d+)$/)
     if (numMatch) {
       const num = parseInt(numMatch[1])
-      if (num >= 1000) {
+      if (num >= HIERARCHY_THRESHOLD) {
         // Round down to nearest 1000 for the parent (1010 -> 1000, 1100 -> 1000, 2345 -> 2000)
-        const parent = Math.floor(num / 1000) * 1000
+        const parent = Math.floor(num / HIERARCHY_THRESHOLD) * HIERARCHY_THRESHOLD
         if (parent > 0 && parent < num) {
           currentIndex = parent.toString()
           parents.push(currentIndex)
@@ -538,4 +507,25 @@ function hideTooltip() {
   if (tooltip) {
     tooltip.style.display = 'none'
   }
+}
+
+// Add tooltip event listeners to a list item
+function addTooltipEventListeners(li, card) {
+  li.addEventListener('mouseenter', (e) => {
+    const tooltipContent = buildTooltipContent(card.index)
+    if (tooltipContent) {
+      showTooltip(e, tooltipContent)
+    }
+  })
+  li.addEventListener('mouseleave', () => {
+    hideTooltip()
+  })
+  li.addEventListener('mousemove', (e) => {
+    // Update tooltip position as mouse moves
+    const tooltip = document.getElementById('cardTooltip')
+    if (tooltip && tooltip.style.display === 'block') {
+      tooltip.style.left = (e.clientX + 10) + 'px'
+      tooltip.style.top = (e.clientY + 10) + 'px'
+    }
+  })
 }
