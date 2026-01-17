@@ -9,7 +9,7 @@ let isDragging = false
 let startX = 0
 let startY = 0
 let isEditMode = false
-let viewMode = 'zettel' // 'zettel' or 'bibliography'
+const HIERARCHY_THRESHOLD = 1000
 document.addEventListener('DOMContentLoaded', () => {
   feather.replace()
   loadFromLocalStorage()
@@ -203,8 +203,11 @@ function renderSidebar() {
       showCardDetails(card)
       renderSidebar()
     })
-    if (selectedCard && ((viewMode === 'zettel' && selectedCard.index === card.index) || 
-                         (viewMode === 'bibliography' && selectedCard.author === card.author && selectedCard.title === card.title))) {
+    
+    // Add tooltip event listeners
+    addTooltipEventListeners(li, card)
+    
+    if (selectedCard && selectedCard.index === card.index) {
       li.classList.add('selected')
     }
     ul.appendChild(li)
@@ -484,8 +487,11 @@ function filterCards(q) {
       showCardDetails(card)
       filterCards(q)
     })
-    if (selectedCard && ((viewMode === 'zettel' && selectedCard.index === card.index) || 
-                         (viewMode === 'bibliography' && selectedCard.author === card.author && selectedCard.title === card.title))) {
+    
+    // Add tooltip event listeners
+    addTooltipEventListeners(li, card)
+    
+    if (selectedCard && selectedCard.index === card.index) {
       li.classList.add('selected')
     }
     ul.appendChild(li)
@@ -555,4 +561,118 @@ function resetTransform() {
 function applyTransform() {
   const img = document.getElementById('viewerImage')
   img.style.transform = 'translate(' + offsetX + 'px,' + offsetY + 'px) scale(' + scale + ')'
+}
+
+// Function to extract parent indexes from a card index
+function getParentIndexes(cardIndex) {
+  const parents = []
+  let currentIndex = cardIndex.trim()
+  
+  while (currentIndex) {
+    // Remove slash suffix (e.g., "1010.1/1" -> "1010.1")
+    if (currentIndex.includes('/')) {
+      currentIndex = currentIndex.substring(0, currentIndex.lastIndexOf('/'))
+      parents.push(currentIndex)
+      continue
+    }
+    
+    // Remove dot suffix (e.g., "1010.1" -> "1010")
+    if (currentIndex.includes('.')) {
+      currentIndex = currentIndex.substring(0, currentIndex.lastIndexOf('.'))
+      parents.push(currentIndex)
+      continue
+    }
+    
+    // For numeric-only indexes, go to the parent level (e.g., "1010" -> "1000", "1100" -> "1000")
+    // This assumes a standard Zettelkasten numbering system
+    const numMatch = currentIndex.match(/^(\d+)$/)
+    if (numMatch) {
+      const num = parseInt(numMatch[1])
+      if (num >= HIERARCHY_THRESHOLD) {
+        // Round down to nearest 1000 for the parent (1010 -> 1000, 1100 -> 1000, 2345 -> 2000)
+        const parent = Math.floor(num / HIERARCHY_THRESHOLD) * HIERARCHY_THRESHOLD
+        if (parent > 0 && parent < num) {
+          currentIndex = parent.toString()
+          parents.push(currentIndex)
+          continue
+        }
+      }
+    }
+    
+    break
+  }
+  
+  return parents
+}
+
+// Function to build tooltip content with parent card names
+function buildTooltipContent(cardIndex) {
+  const parentIndexes = getParentIndexes(cardIndex)
+  
+  if (parentIndexes.length === 0) {
+    return '' // No parents, no tooltip
+  }
+  
+  const pathParts = []
+  parentIndexes.forEach(parentIdx => {
+    const parentCard = cards.find(c => c.index === parentIdx)
+    if (parentCard) {
+      pathParts.push(`${parentCard.index} - ${parentCard.name}`)
+    } else {
+      pathParts.push(`${parentIdx} (not found)`)
+    }
+  })
+  
+  return pathParts.join('\n↓ ')
+}
+
+// Show tooltip
+function showTooltip(event, content) {
+  if (!content) return
+  
+  let tooltip = document.getElementById('cardTooltip')
+  if (!tooltip) {
+    tooltip = document.createElement('div')
+    tooltip.id = 'cardTooltip'
+    tooltip.className = 'card-tooltip'
+    document.body.appendChild(tooltip)
+  }
+  
+  tooltip.textContent = content
+  tooltip.style.display = 'block'
+  
+  // Position tooltip near the mouse
+  const x = event.clientX + 10
+  const y = event.clientY + 10
+  tooltip.style.left = x + 'px'
+  tooltip.style.top = y + 'px'
+}
+
+// Hide tooltip
+function hideTooltip() {
+  const tooltip = document.getElementById('cardTooltip')
+  if (tooltip) {
+    tooltip.style.display = 'none'
+  }
+}
+
+// Add tooltip event listeners to a list item
+function addTooltipEventListeners(li, card) {
+  li.addEventListener('mouseenter', (e) => {
+    const tooltipContent = buildTooltipContent(card.index)
+    if (tooltipContent) {
+      showTooltip(e, tooltipContent)
+    }
+  })
+  li.addEventListener('mouseleave', () => {
+    hideTooltip()
+  })
+  li.addEventListener('mousemove', (e) => {
+    // Update tooltip position as mouse moves
+    const tooltip = document.getElementById('cardTooltip')
+    if (tooltip && tooltip.style.display === 'block') {
+      tooltip.style.left = (e.clientX + 10) + 'px'
+      tooltip.style.top = (e.clientY + 10) + 'px'
+    }
+  })
 }

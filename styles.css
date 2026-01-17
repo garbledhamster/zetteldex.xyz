@@ -531,3 +531,21 @@ header {
         max-width: 250px;
     }
 }
+
+/* Tooltip */
+.card-tooltip {
+    position: fixed;
+    background: #1A0033;
+    color: #FFFFFF;
+    border: 1px solid #9D62CC;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    white-space: pre-line;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    max-width: 300px;
+    display: none;
+}
