@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the artifact
+    function isOwner(artifactData) {
+      return request.auth.uid == artifactData.owner;
+    }
+
+    // Helper function to check if user can edit the artifact
+    function canEdit(artifactData) {
+      return isOwner(artifactData)
+        || request.auth.uid in artifactData.acl.owners
+        || request.auth.uid in artifactData.acl.editors;
+    }
+
+    // Helper function to check if user can view the artifact
+    function canView(artifactData) {
+      return canEdit(artifactData)
+        || request.auth.uid in artifactData.acl.viewers
+        || artifactData.visibility == 'public';
+    }
+
+    // Artifacts collection rules
+    match /artifacts/{artifactId} {
+      // Allow read if user can view the artifact
+      allow read: if isAuthenticated() && canView(resource.data);
+
+      // Allow create if authenticated and user is set as owner
+      allow create: if isAuthenticated()
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.acl.owners[0] == request.auth.uid;
+
+      // Allow update if user can edit the artifact
+      allow update: if isAuthenticated()
+        && canEdit(resource.data)
+        && request.resource.data.owner == resource.data.owner; // Prevent changing owner
+
+      // Allow delete if user owns the artifact
+      allow delete: if isAuthenticated() && isOwner(resource.data);
+    }
+  }
+}

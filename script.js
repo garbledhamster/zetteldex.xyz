@@ -159,6 +159,14 @@ function addCardFromModal() {
   cards.push(c)
   closeNewCardModal()
   saveToLocalStorage()
+
+  // Sync single card to Firebase
+  if (window.syncToFirebase) {
+    window.syncToFirebase(c, 'note').catch(err => {
+      console.error('Error syncing card to Firebase:', err)
+    })
+  }
+
   renderSidebar()
 }
 function addBibCardFromModal() {
@@ -342,6 +350,15 @@ function saveCardChanges() {
   }
   exitEditMode()
   saveToLocalStorage()
+
+  // Sync single card to Firebase
+  if (window.syncToFirebase) {
+    const cardType = viewMode === 'zettel' ? 'note' : 'bibliography'
+    window.syncToFirebase(selectedCard, cardType).catch(err => {
+      console.error('Error syncing card to Firebase:', err)
+    })
+  }
+
   renderSidebar()
   showCardDetails(selectedCard)
 }
@@ -442,6 +459,13 @@ function loadFromLocalStorage() {
 function saveToLocalStorage() {
   localStorage.setItem('zetteldexData', JSON.stringify(cards))
   localStorage.setItem('bibCardsData', JSON.stringify(bibCards))
+
+  // Sync to Firebase if available
+  if (window.syncAllToFirebase) {
+    window.syncAllToFirebase(cards, bibCards).catch(err => {
+      console.error('Error syncing to Firebase:', err)
+    })
+  }
 }
 function showInfoModal(t, m) {
   document.getElementById('infoModalTitle').textContent = t
@@ -677,4 +701,43 @@ function addTooltipEventListeners(li, card) {
       tooltip.style.top = (e.clientY + 10) + 'px'
     }
   })
+}
+
+// Firebase sync callbacks - called by main.js when data is updated from Firestore
+window.updateCardsFromFirebase = function(newCards) {
+  console.log('Updating cards from Firebase:', newCards.length)
+  cards = newCards
+  localStorage.setItem('zetteldexData', JSON.stringify(cards))
+  if (viewMode === 'zettel') {
+    renderSidebar()
+    // Re-select current card if it still exists
+    if (selectedCard) {
+      const stillExists = cards.find(c => c.index === selectedCard.index || c.artifactId === selectedCard.artifactId)
+      if (stillExists) {
+        selectedCard = stillExists
+        showCardDetails(selectedCard)
+      } else {
+        showPlaceholder()
+      }
+    }
+  }
+}
+
+window.updateBibCardsFromFirebase = function(newBibCards) {
+  console.log('Updating bibliography cards from Firebase:', newBibCards.length)
+  bibCards = newBibCards
+  localStorage.setItem('bibCardsData', JSON.stringify(bibCards))
+  if (viewMode === 'bibliography') {
+    renderSidebar()
+    // Re-select current card if it still exists
+    if (selectedCard) {
+      const stillExists = bibCards.find(c => c.title === selectedCard.title || c.artifactId === selectedCard.artifactId)
+      if (stillExists) {
+        selectedCard = stillExists
+        showCardDetails(selectedCard)
+      } else {
+        showPlaceholder()
+      }
+    }
+  }
 }
