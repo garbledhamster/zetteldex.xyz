@@ -17,6 +17,17 @@
         <i data-feather="menu"></i>
       </button>
       <h1>Zettel Dex</h1>
+      <!-- User authentication section -->
+      <div id="authSection" class="auth-section">
+        <button id="loginBtn" class="auth-btn">Login</button>
+        <button id="signupBtn" class="auth-btn">Sign Up</button>
+        <div id="userSection" style="display: none;">
+          <span id="userEmail"></span>
+          <button id="logoutBtn" class="icon-button">
+            <i data-feather="log-out"></i>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -219,6 +230,44 @@
     </div>
   </div>
 
+  <!-- Modal: Login -->
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <h3>Login to Zettel Dex</h3>
+      <div class="auth-form">
+        <label for="loginEmail">Email:</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" required>
+        <label for="loginPassword">Password:</label>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <div class="auth-error" id="loginError" style="display: none;"></div>
+        <div class="modal-actions">
+          <button class="cancel-btn" id="cancelLoginBtn">Cancel</button>
+          <button class="add-btn" id="submitLoginBtn">Login</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Sign Up -->
+  <div class="modal" id="signupModal">
+    <div class="modal-content">
+      <h3>Create Account</h3>
+      <div class="auth-form">
+        <label for="signupEmail">Email:</label>
+        <input type="email" id="signupEmail" placeholder="your@email.com" required>
+        <label for="signupPassword">Password:</label>
+        <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" required>
+        <label for="signupPasswordConfirm">Confirm Password:</label>
+        <input type="password" id="signupPasswordConfirm" placeholder="Confirm Password" required>
+        <div class="auth-error" id="signupError" style="display: none;"></div>
+        <div class="modal-actions">
+          <button class="cancel-btn" id="cancelSignupBtn">Cancel</button>
+          <button class="add-btn" id="submitSignupBtn">Sign Up</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Hidden Inputs -->
   <input type="file" id="jsonImportFile" accept=".json" style="display: none;">
   <input type="file" id="cameraFileInput" accept="image/*" capture="camera" style="display:none;">
@@ -226,7 +275,7 @@
 
   <!-- Icons + Script -->
   <script src="https://unpkg.com/feather-icons"></script>
-  <script src="script.js"></script>
+  <script type="module" src="./src/main.js"></script>
   <script>
     // Replace all feather icons
     feather.replace();
