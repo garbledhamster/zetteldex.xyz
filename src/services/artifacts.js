@@ -36,8 +36,9 @@ function generateId() {
  */
 export function createNoteArtifact(card, userId) {
   const now = new Date().toISOString();
+  const isNewArtifact = !card.artifactId;
 
-  return {
+  const artifact = {
     id: card.artifactId || generateId(),
     type: 'note',
     title: card.name || 'Untitled Note',
@@ -57,7 +58,6 @@ export function createNoteArtifact(card, userId) {
 
     tags: card.keywords ? card.keywords.split(',').map(k => k.trim()).filter(k => k) : [],
 
-    status: 'active',
     schemaVersion: 1,
 
     createdAt: card.createdAt || now,
@@ -103,6 +103,13 @@ export function createNoteArtifact(card, userId) {
       extraAttribute5: null
     }
   };
+
+  // Only set status for new artifacts to avoid overwriting 'trashed' status
+  if (isNewArtifact) {
+    artifact.status = 'active';
+  }
+
+  return artifact;
 }
 
 /**
@@ -113,8 +120,9 @@ export function createNoteArtifact(card, userId) {
  */
 export function createBibliographyArtifact(bibCard, userId) {
   const now = new Date().toISOString();
+  const isNewArtifact = !bibCard.artifactId;
 
-  return {
+  const artifact = {
     id: bibCard.artifactId || generateId(),
     type: 'book',
     title: bibCard.title || 'Untitled Book',
@@ -134,7 +142,6 @@ export function createBibliographyArtifact(bibCard, userId) {
 
     tags: ['bibliography'],
 
-    status: 'active',
     schemaVersion: 1,
 
     createdAt: bibCard.createdAt || now,
@@ -180,6 +187,13 @@ export function createBibliographyArtifact(bibCard, userId) {
       extraAttribute5: null
     }
   };
+
+  // Only set status for new artifacts to avoid overwriting 'trashed' status
+  if (isNewArtifact) {
+    artifact.status = 'active';
+  }
+
+  return artifact;
 }
 
 /**
