@@ -17,10 +17,15 @@ import { getCurrentUser } from './auth.js';
 const ARTIFACTS_COLLECTION = 'artifacts';
 
 /**
- * Generate a simple unique ID (you can use ulid library for production)
+ * Generate a ULID-like ID (26 characters)
+ * Format: Timestamp (10 chars) + Random (16 chars)
  */
 function generateId() {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const timestamp = Date.now().toString(36).toUpperCase().padStart(10, '0');
+  const randomPart = Array.from({ length: 16 }, () =>
+    '0123456789ABCDEFGHJKMNPQRSTVWXYZ'[Math.floor(Math.random() * 32)]
+  ).join('');
+  return timestamp + randomPart;
 }
 
 /**
