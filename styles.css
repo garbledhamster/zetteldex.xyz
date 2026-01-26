@@ -391,7 +391,8 @@ header {
     background: #3C0B6D;
 }
 
-/* Tooltip */
+/* Hide the menu toggle and close button by default (desktop).
+   Display them only on smaller screens. */
 .mobile-toggle {
     display: none; /* hide on desktop */
 }
