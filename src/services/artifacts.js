@@ -17,10 +17,13 @@ import { getCurrentUser } from './auth.js';
 const ARTIFACTS_COLLECTION = 'artifacts';
 
 /**
- * Generate a simple unique ID (you can use ulid library for production)
+ * Generate a simple unique ID (ULID-like format)
  */
 function generateId() {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  // Generate a timestamp-based ID with random component (ULID-like)
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const randomPart = Math.random().toString(36).substr(2, 9).toUpperCase();
+  return `${timestamp}${randomPart}`.padEnd(26, '0').substr(0, 26);
 }
 
 /**
@@ -31,9 +34,10 @@ function generateId() {
  */
 export function createNoteArtifact(card, userId) {
   const now = new Date().toISOString();
+  const artifactId = card.artifactId || generateId();
 
   return {
-    id: card.artifactId || generateId(),
+    id: artifactId,
     type: 'note',
     title: card.name || 'Untitled Note',
 
@@ -59,7 +63,7 @@ export function createNoteArtifact(card, userId) {
     updatedAt: now,
 
     refs: {
-      assets: card.images || [],
+      assets: card.images && card.images.length > 0 ? card.images.map((img, idx) => `asset_${artifactId}_${idx}`) : [],
       sources: [],
       links: card.connections ? card.connections.split(',').map(c => c.trim()).filter(c => c) : []
     },
@@ -72,21 +76,26 @@ export function createNoteArtifact(card, userId) {
           location: '',
           url: ''
         },
-        assetIds: card.images || [],
+        assetIds: card.images && card.images.length > 0 ? card.images.map((img, idx) => `asset_${artifactId}_${idx}`) : [],
         meta: {
           zettelId: card.index || '',
-          backContent: card.back || ''
+          backContent: card.back || '',
+          cardStyle: 'zettelkasten'
         }
       },
 
       notes: {
         cardStyle: 'zettelkasten',
-        links: card.connections ? card.connections.split(',').map(c => ({
-          rel: 'related',
-          targetId: c.trim(),
-          label: ''
-        })).filter(l => l.targetId) : [],
-        prompts: []
+        links: card.connections ? card.connections.split(',').map(c => {
+          const targetId = c.trim();
+          return targetId ? {
+            rel: 'related',
+            targetId: targetId,
+            label: ''
+          } : null;
+        }).filter(l => l) : [],
+        prompts: [],
+        images: card.images || []
       }
     },
 
@@ -108,9 +117,10 @@ export function createNoteArtifact(card, userId) {
  */
 export function createBibliographyArtifact(bibCard, userId) {
   const now = new Date().toISOString();
+  const artifactId = bibCard.artifactId || generateId();
 
   return {
-    id: bibCard.artifactId || generateId(),
+    id: artifactId,
     type: 'book',
     title: bibCard.title || 'Untitled Book',
 
@@ -136,7 +146,7 @@ export function createBibliographyArtifact(bibCard, userId) {
     updatedAt: now,
 
     refs: {
-      assets: bibCard.images || [],
+      assets: bibCard.images && bibCard.images.length > 0 ? bibCard.images.map((img, idx) => `asset_${artifactId}_${idx}`) : [],
       sources: [],
       links: []
     },
@@ -149,12 +159,13 @@ export function createBibliographyArtifact(bibCard, userId) {
           location: '',
           url: ''
         },
-        assetIds: bibCard.images || [],
+        assetIds: bibCard.images && bibCard.images.length > 0 ? bibCard.images.map((img, idx) => `asset_${artifactId}_${idx}`) : [],
         meta: {
           author: bibCard.author || '',
           subtitle: bibCard.subtitle || '',
           year: bibCard.year || '',
-          goal: bibCard.goal || ''
+          goal: bibCard.goal || '',
+          cardType: 'bibliography'
         }
       },
 
@@ -163,7 +174,8 @@ export function createBibliographyArtifact(bibCard, userId) {
         subtitle: bibCard.subtitle || '',
         year: bibCard.year || '',
         summary: bibCard.summary || '',
-        goal: bibCard.goal || ''
+        goal: bibCard.goal || '',
+        images: bibCard.images || []
       }
     },
 
@@ -192,20 +204,20 @@ export function artifactToCard(artifact) {
       back: artifact.data?.core?.meta?.backContent || '',
       keywords: artifact.tags?.join(', ') || '',
       connections: artifact.refs?.links?.join(', ') || '',
-      images: artifact.refs?.assets || [],
+      images: artifact.data?.notes?.images || artifact.refs?.assets || [],
       createdAt: artifact.createdAt,
       updatedAt: artifact.updatedAt
     };
   } else if (artifact.type === 'book') {
     return {
       artifactId: artifact.id,
-      author: artifact.data?.bibliography?.author || '',
+      author: artifact.data?.bibliography?.author || artifact.data?.core?.meta?.author || '',
       title: artifact.title,
-      subtitle: artifact.data?.bibliography?.subtitle || '',
-      year: artifact.data?.bibliography?.year || '',
-      summary: artifact.data?.bibliography?.summary || '',
-      goal: artifact.data?.bibliography?.goal || '',
-      images: artifact.refs?.assets || [],
+      subtitle: artifact.data?.bibliography?.subtitle || artifact.data?.core?.meta?.subtitle || '',
+      year: artifact.data?.bibliography?.year || artifact.data?.core?.meta?.year || '',
+      summary: artifact.data?.bibliography?.summary || artifact.data?.core?.text || '',
+      goal: artifact.data?.bibliography?.goal || artifact.data?.core?.meta?.goal || '',
+      images: artifact.data?.bibliography?.images || artifact.refs?.assets || [],
       createdAt: artifact.createdAt,
       updatedAt: artifact.updatedAt
     };
