@@ -275,38 +275,6 @@ header {
 .save-button:hover {
     background: #218838;
 }
-.image-gallery {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-.image-thumb-wrapper {
-    position: relative;
-    width: 60px;
-    height: 60px;
-    border-radius: 4px;
-    overflow: hidden;
-}
-.image-thumb {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    cursor: pointer;
-}
-.delete-thumb-btn {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    background: red;
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 0.7rem;
-    cursor: pointer;
-    display: none;
-}
 
 /* Modals */
 .modal {
@@ -423,68 +391,7 @@ header {
     background: #3C0B6D;
 }
 
-/* Image viewer modal */
-.image-viewer-container {
-    position: relative;
-    max-width: 90%;
-    max-height: 90%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.viewer-close,
-.viewer-nav {
-    z-index: 1000;
-}
-.viewer-close {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 2rem;
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-}
-.viewer-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 2rem;
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    padding: 0 10px;
-}
-#prevImageBtn {
-    left: 10px;
-}
-#nextImageBtn {
-    right: 10px;
-}
-.viewer-frame {
-    background: #333;
-    padding: 20px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 80vw;
-    height: 80vh;
-    overflow: hidden;
-    position: relative;
-}
-#viewerImage {
-    transform-origin: center center;
-    transition: transform 0.15s ease;
-    max-width: none;
-    max-height: none;
-    cursor: move;
-}
-
-/* Hide the menu toggle and close button by default (desktop).
-   Display them only on smaller screens. */
+/* Tooltip */
 .mobile-toggle {
     display: none; /* hide on desktop */
 }

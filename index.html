@@ -78,9 +78,6 @@
         <div class="card-header">
           <h2 id="cardTitle">[Card Title]</h2>
           <div>
-            <button class="icon-button" id="cameraBtn">
-              <i data-feather="camera"></i>
-            </button>
             <button class="icon-button" id="editBtn">
               <i data-feather="edit"></i>
             </button>
@@ -138,7 +135,6 @@
             <textarea id="detailGoal" rows="3" readonly></textarea>
           </div>
         </div>
-        <div class="image-gallery" id="imageGallery"></div>
         <button class="save-button" id="saveBtn" style="display:none">
           <i data-feather="save"></i> Save
         </button>
@@ -203,30 +199,6 @@
     </div>
   </div>
 
-  <!-- Modal: Photo Options -->
-  <div class="modal" id="photoOptionsModal">
-    <div class="modal-content">
-      <h4>Photo Options</h4>
-      <div class="modal-actions">
-        <button class="add-btn" id="useCameraBtn">Use Camera</button>
-        <button class="add-btn" id="uploadImageBtn">Upload Picture</button>
-      </div>
-      <button class="cancel-btn" id="closePhotoOptionsBtn">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Modal: Image Viewer -->
-  <div class="modal" id="imageViewerModal">
-    <div class="image-viewer-container" id="imageViewerContainer">
-      <button class="viewer-close" id="closeImageViewerBtn">&times;</button>
-      <button class="viewer-nav" id="prevImageBtn">&#10094;</button>
-      <div class="viewer-frame" id="viewerFrame">
-        <img id="viewerImage" src="" alt="">
-      </div>
-      <button class="viewer-nav" id="nextImageBtn">&#10095;</button>
-    </div>
-  </div>
-
   <!-- Modal: Login -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
@@ -267,8 +239,6 @@
 
   <!-- Hidden Inputs -->
   <input type="file" id="jsonImportFile" accept=".json" style="display: none;">
-  <input type="file" id="cameraFileInput" accept="image/*" capture="camera" style="display:none;">
-  <input type="file" id="uploadFileInput" accept="image/*" style="display:none;">
 
   <!-- Icons + Script -->
   <script src="https://unpkg.com/feather-icons"></script>

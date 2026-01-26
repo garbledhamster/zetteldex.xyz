@@ -64,7 +64,7 @@ export function createNoteArtifact(card, userId) {
     updatedAt: now,
 
     refs: {
-      assets: card.images || [],
+      assets: [],
       sources: [],
       links: card.connections ? card.connections.split(',').map(c => c.trim()).filter(c => c) : []
     },
@@ -77,7 +77,7 @@ export function createNoteArtifact(card, userId) {
           location: '',
           url: ''
         },
-        assetIds: card.images || [],
+        assetIds: [],
         meta: {
           noteId: card.index || '',
           backContent: card.back || ''
@@ -141,7 +141,7 @@ export function createBibliographyArtifact(bibCard, userId) {
     updatedAt: now,
 
     refs: {
-      assets: bibCard.images || [],
+      assets: [],
       sources: [],
       links: []
     },
@@ -154,7 +154,7 @@ export function createBibliographyArtifact(bibCard, userId) {
           location: '',
           url: ''
         },
-        assetIds: bibCard.images || [],
+        assetIds: [],
         meta: {
           author: bibCard.author || '',
           subtitle: bibCard.subtitle || '',
@@ -197,7 +197,6 @@ export function artifactToCard(artifact) {
       back: artifact.data?.core?.meta?.backContent || '',
       keywords: artifact.tags?.join(', ') || '',
       connections: artifact.refs?.links?.join(', ') || '',
-      images: artifact.refs?.assets || [],
       createdAt: artifact.createdAt,
       updatedAt: artifact.updatedAt
     };
@@ -210,7 +209,6 @@ export function artifactToCard(artifact) {
       year: artifact.data?.bibliography?.year || '',
       summary: artifact.data?.bibliography?.summary || '',
       goal: artifact.data?.bibliography?.goal || '',
-      images: artifact.refs?.assets || [],
       createdAt: artifact.createdAt,
       updatedAt: artifact.updatedAt
     };
