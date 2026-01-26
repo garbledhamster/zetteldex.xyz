@@ -391,7 +391,8 @@ async function confirmDeleteCard() {
   // Delete from Firebase first if available
   if (window.deleteFromFirebase) {
     try {
-      await window.deleteFromFirebase(selectedCard)
+      const cardType = viewMode === 'zettel' ? 'note' : 'bibliography'
+      await window.deleteFromFirebase(selectedCard, cardType)
     } catch (error) {
       console.error('Error deleting from Firebase:', error)
       // Continue with local deletion even if Firebase fails

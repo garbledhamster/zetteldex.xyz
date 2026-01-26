@@ -263,23 +263,56 @@ export function isSyncEnabled() {
 /**
  * Delete a card from Firebase
  * @param {Object} card - The card object with artifactId
+ * @param {string} type - Type of card: 'note' or 'bibliography'
  * @returns {Promise<Object>} Result of deletion
  */
-export async function deleteCardFromFirebase(card) {
+export async function deleteCardFromFirebase(card, type = 'note') {
   const user = getCurrentUser();
   if (!user) {
     console.warn('User not authenticated, skipping Firebase deletion');
     return { success: false, reason: 'not_authenticated' };
   }
 
-  if (!card || !card.artifactId) {
-    console.warn('Card has no artifactId, cannot delete from Firebase');
-    return { success: false, reason: 'no_artifact_id' };
+  if (!card) {
+    console.warn('No card provided, cannot delete from Firebase');
+    return { success: false, reason: 'no_card' };
   }
 
   try {
-    await deleteArtifact(card.artifactId);
-    console.log(`Deleted card ${card.artifactId} from Firebase`);
+    let artifactIdToDelete = card.artifactId;
+
+    // If card doesn't have artifactId, search for it in Firebase
+    if (!artifactIdToDelete) {
+      console.log('Card has no artifactId, searching Firebase for matching artifact...');
+      const artifacts = await getUserArtifacts(type);
+      
+      // Find the artifact by matching the card's unique identifier
+      let matchingArtifact;
+      if (type === 'note') {
+        // Match by index for note cards
+        matchingArtifact = artifacts.find(a => 
+          a.data?.core?.meta?.noteId === card.index || 
+          a.data?.core?.meta?.zettelId === card.index
+        );
+      } else {
+        // Match by author and title for bibliography cards
+        matchingArtifact = artifacts.find(a =>
+          a.data?.bibliography?.author === card.author &&
+          a.title === card.title
+        );
+      }
+
+      if (matchingArtifact) {
+        artifactIdToDelete = matchingArtifact.id;
+        console.log(`Found matching artifact in Firebase: ${artifactIdToDelete}`);
+      } else {
+        console.warn('No matching artifact found in Firebase');
+        return { success: false, reason: 'not_found_in_firebase' };
+      }
+    }
+
+    await deleteArtifact(artifactIdToDelete);
+    console.log(`Deleted card ${artifactIdToDelete} from Firebase`);
     return { success: true };
   } catch (error) {
     console.error('Error deleting card from Firebase:', error);
