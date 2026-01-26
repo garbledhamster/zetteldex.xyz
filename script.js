@@ -170,13 +170,6 @@ function addCardFromModal() {
   closeNewCardModal()
   saveToLocalStorage()
 
-  // Sync single card to Firebase
-  if (window.syncToFirebase) {
-    window.syncToFirebase(c, 'note').catch(err => {
-      console.error('Error syncing card to Firebase:', err)
-    })
-  }
-
   renderSidebar()
 
   // Reset flag after a short delay
@@ -378,14 +371,6 @@ function saveCardChanges() {
   }
   exitEditMode()
   saveToLocalStorage()
-
-  // Sync single card to Firebase
-  if (window.syncToFirebase) {
-    const cardType = viewMode === 'zettel' ? 'note' : 'bibliography'
-    window.syncToFirebase(selectedCard, cardType).catch(err => {
-      console.error('Error syncing card to Firebase:', err)
-    })
-  }
 
   renderSidebar()
   showCardDetails(selectedCard)
