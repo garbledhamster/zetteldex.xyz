@@ -145,6 +145,19 @@ function setupAuthUI() {
   document.getElementById('signupPasswordConfirm').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') submitSignupBtn.click();
   });
+
+  // Close modals when clicking outside
+  document.getElementById('loginModal').addEventListener('click', (e) => {
+    if (e.target.id === 'loginModal') {
+      hideModal('loginModal');
+    }
+  });
+
+  document.getElementById('signupModal').addEventListener('click', (e) => {
+    if (e.target.id === 'signupModal') {
+      hideModal('signupModal');
+    }
+  });
 }
 
 /**
