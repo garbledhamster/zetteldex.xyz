@@ -24,8 +24,8 @@ function generateId() {
 }
 
 /**
- * Create an artifact object from a zettel card
- * @param {Object} card - The zettel card object
+ * Create an artifact object from a note card
+ * @param {Object} card - The note card object
  * @param {string} userId - The user ID
  * @returns {Object} Artifact object
  */
@@ -74,13 +74,13 @@ export function createNoteArtifact(card, userId) {
         },
         assetIds: card.images || [],
         meta: {
-          zettelId: card.index || '',
+          noteId: card.index || '',
           backContent: card.back || ''
         }
       },
 
       notes: {
-        cardStyle: 'zettelkasten',
+        cardStyle: 'note',
         links: card.connections ? card.connections.split(',').map(c => ({
           rel: 'related',
           targetId: c.trim(),
@@ -178,7 +178,7 @@ export function createBibliographyArtifact(bibCard, userId) {
 }
 
 /**
- * Convert an artifact back to a zettel card
+ * Convert an artifact back to a note card
  * @param {Object} artifact
  * @returns {Object} Card object
  */
@@ -186,7 +186,7 @@ export function artifactToCard(artifact) {
   if (artifact.type === 'note') {
     return {
       artifactId: artifact.id,
-      index: artifact.data?.core?.meta?.zettelId || '',
+      index: artifact.data?.core?.meta?.noteId || artifact.data?.core?.meta?.zettelId || '',
       name: artifact.title,
       front: artifact.data?.core?.text || '',
       back: artifact.data?.core?.meta?.backContent || '',

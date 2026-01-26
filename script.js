@@ -117,7 +117,7 @@ function updateViewModeUI() {
     btn.setAttribute('title', 'Add Bibliography Card')
     placeholderBtn.textContent = 'Make new bibliography card'
   } else {
-    btn.setAttribute('title', 'Add Zettel Card')
+    btn.setAttribute('title', 'Add Note Card')
     placeholderBtn.textContent = 'Make new card'
   }
 }
@@ -230,7 +230,7 @@ function showCardDetails(card) {
   
   if (viewMode === 'zettel') {
     document.getElementById('cardTitle').textContent = card.name || '[No Title]'
-    document.getElementById('zettelFields').style.display = 'block'
+    document.getElementById('noteFields').style.display = 'block'
     document.getElementById('bibFields').style.display = 'none'
     document.getElementById('detailIndex').value = card.index
     document.getElementById('detailName').value = card.name
@@ -240,7 +240,7 @@ function showCardDetails(card) {
     document.getElementById('detailConnections').value = card.connections || ''
   } else {
     document.getElementById('cardTitle').textContent = card.title || '[No Title]'
-    document.getElementById('zettelFields').style.display = 'none'
+    document.getElementById('noteFields').style.display = 'none'
     document.getElementById('bibFields').style.display = 'block'
     document.getElementById('detailAuthor').value = card.author
     document.getElementById('detailBibTitle').value = card.title
@@ -434,12 +434,12 @@ function exportToJson() {
   const u = URL.createObjectURL(b)
   const a = document.createElement('a')
   a.href = u
-  a.download = viewMode === 'zettel' ? 'zettel-dex.json' : 'bibliography-dex.json'
+  a.download = viewMode === 'zettel' ? 'notes.json' : 'bibliography.json'
   a.click()
   URL.revokeObjectURL(u)
 }
 function loadFromLocalStorage() {
-  const d = localStorage.getItem('zetteldexData')
+  const d = localStorage.getItem('notesData')
   if (d) {
     try {
       cards = JSON.parse(d)
@@ -457,7 +457,7 @@ function loadFromLocalStorage() {
   }
 }
 function saveToLocalStorage() {
-  localStorage.setItem('zetteldexData', JSON.stringify(cards))
+  localStorage.setItem('notesData', JSON.stringify(cards))
   localStorage.setItem('bibCardsData', JSON.stringify(bibCards))
 
   // Sync to Firebase if available
@@ -707,7 +707,7 @@ function addTooltipEventListeners(li, card) {
 window.updateCardsFromFirebase = function(newCards) {
   console.log('Updating cards from Firebase:', newCards.length)
   cards = newCards
-  localStorage.setItem('zetteldexData', JSON.stringify(cards))
+  localStorage.setItem('notesData', JSON.stringify(cards))
   if (viewMode === 'zettel') {
     renderSidebar()
     // Re-select current card if it still exists
