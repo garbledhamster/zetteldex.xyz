@@ -105,14 +105,14 @@ export async function migrateLocalDataToFirebase(localCards, localBibCards) {
   try {
     // Get existing artifacts from Firebase to avoid duplicates
     const existingArtifacts = await getUserArtifacts();
-    const existingIds = new Set(existingArtifacts.map(a => a.data?.core?.meta?.zettelId || a.id));
+    const existingIds = new Set(existingArtifacts.map(a => a.data?.core?.meta?.noteId || a.data?.core?.meta?.zettelId || a.id));
 
     let migratedCount = 0;
     let skippedCount = 0;
 
-    // Migrate zettel cards
+    // Migrate note cards
     for (const card of localCards) {
-      // Skip if already exists in Firebase (by zettel index)
+      // Skip if already exists in Firebase (by note index)
       if (card.index && existingIds.has(card.index)) {
         console.log(`Skipping card ${card.index} - already exists in Firebase`);
         skippedCount++;
@@ -197,7 +197,7 @@ export async function syncAllCardsToFirebase(cards, bibCards) {
   console.log(`Syncing ${cards.length} cards and ${bibCards.length} bibliography cards...`);
 
   try {
-    // Sync all zettel cards
+    // Sync all note cards
     for (const card of cards) {
       const artifact = createNoteArtifact(card, user.uid);
       await saveArtifact(artifact);

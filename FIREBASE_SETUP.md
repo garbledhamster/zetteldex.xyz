@@ -1,6 +1,6 @@
 # Firebase Setup Instructions
 
-This document explains how to set up Firebase for the Zettel Dex application.
+This document explains how to set up Firebase for the Notes application.
 
 ## Prerequisites
 

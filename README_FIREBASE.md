@@ -1,6 +1,6 @@
-# Zettel Dex - Firebase Integration Guide
+# Notes - Firebase Integration Guide
 
-This document explains the Firebase authentication and database integration added to Zettel Dex.
+This document explains the Firebase authentication and database integration added to Notes.
 
 ## What's New
 
@@ -69,7 +69,7 @@ Before the app can fully function, you need to set up Firebase:
 ### File Structure
 
 ```
-zetteldex.xyz/
+notes.ourstuff.space/
 ├── src/
 │   ├── firebase/
 │   │   └── config.js           # Firebase initialization
@@ -136,12 +136,12 @@ Notes are stored as "artifacts" with the following structure:
     "core": {
       "text": "Front content",
       "meta": {
-        "zettelId": "1111.1",
+        "noteId": "1111.1",
         "backContent": "Back content"
       }
     },
     "notes": {
-      "cardStyle": "zettelkasten",
+      "cardStyle": "note",
       "links": [...]
     }
   },
@@ -279,4 +279,4 @@ For issues or questions:
 
 ## License
 
-Same as the main Zettel Dex project.
+Same as the main Notes project.

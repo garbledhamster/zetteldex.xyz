@@ -1,14 +1,14 @@
 {
-  "name": "zetteldex",
+  "name": "notes",
   "version": "1.0.0",
-  "description": "A Zettelkasten note-taking system with Firebase authentication",
+  "description": "A note-taking system with Firebase authentication",
   "type": "module",
   "scripts": {
     "build": "vite build",
     "dev": "vite",
     "preview": "vite preview"
   },
-  "keywords": ["zettelkasten", "notes", "firebase"],
+  "keywords": ["notes", "firebase"],
   "author": "",
   "license": "MIT",
   "dependencies": {

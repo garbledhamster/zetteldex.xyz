@@ -1,4 +1,4 @@
-// Main entry point - integrates Firebase with the Zettel Dex app
+// Main entry point - integrates Firebase with the Notes app
 import { onAuthChange, signIn, signUp, signOut, getCurrentUser } from './services/auth.js';
 import { loadRecaptcha } from './services/recaptcha.js';
 import {
@@ -231,7 +231,7 @@ function updateAuthUI(user) {
 async function migrateLocalData() {
   try {
     // Get data from localStorage
-    const localCardsData = localStorage.getItem('zetteldexData');
+    const localCardsData = localStorage.getItem('notesData');
     const localBibCardsData = localStorage.getItem('bibCardsData');
 
     let localCards = [];
