@@ -385,8 +385,20 @@ function openDeleteModal() {
 function closeDeleteModal() {
   document.getElementById('deleteCardModal').classList.remove('visible')
 }
-function confirmDeleteCard() {
+async function confirmDeleteCard() {
   if (!selectedCard) return
+
+  // Delete from Firebase first if available
+  if (window.deleteFromFirebase) {
+    try {
+      await window.deleteFromFirebase(selectedCard)
+    } catch (error) {
+      console.error('Error deleting from Firebase:', error)
+      // Continue with local deletion even if Firebase fails
+    }
+  }
+
+  // Delete from local storage
   if (viewMode === 'zettel') {
     removeCard(selectedCard.index)
   } else {

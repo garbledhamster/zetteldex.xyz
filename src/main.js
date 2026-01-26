@@ -7,7 +7,8 @@ import {
   migrateLocalDataToFirebase,
   syncCardToFirebase,
   syncAllCardsToFirebase,
-  loadCardsFromFirebase
+  loadCardsFromFirebase,
+  deleteCardFromFirebase
 } from './services/sync.js';
 
 // Load legacy script.js
@@ -197,6 +198,7 @@ function initializeAuthState() {
       // Expose sync function globally so script.js can use it
       window.syncToFirebase = syncCardToFirebase;
       window.syncAllToFirebase = syncAllCardsToFirebase;
+      window.deleteFromFirebase = deleteCardFromFirebase;
 
     } else {
       // User is logged out
@@ -208,6 +210,7 @@ function initializeAuthState() {
       // Remove sync functions
       window.syncToFirebase = null;
       window.syncAllToFirebase = null;
+      window.deleteFromFirebase = null;
     }
   });
 }

@@ -4,7 +4,8 @@ import {
   subscribeToArtifacts,
   createNoteArtifact,
   createBibliographyArtifact,
-  artifactToCard
+  artifactToCard,
+  deleteArtifact
 } from './artifacts.js';
 import { getCurrentUser } from './auth.js';
 
@@ -257,4 +258,31 @@ export async function loadCardsFromFirebase() {
  */
 export function isSyncEnabled() {
   return syncEnabled;
+}
+
+/**
+ * Delete a card from Firebase
+ * @param {Object} card - The card object with artifactId
+ * @returns {Promise<Object>} Result of deletion
+ */
+export async function deleteCardFromFirebase(card) {
+  const user = getCurrentUser();
+  if (!user) {
+    console.warn('User not authenticated, skipping Firebase deletion');
+    return { success: false, reason: 'not_authenticated' };
+  }
+
+  if (!card || !card.artifactId) {
+    console.warn('Card has no artifactId, cannot delete from Firebase');
+    return { success: false, reason: 'no_artifact_id' };
+  }
+
+  try {
+    await deleteArtifact(card.artifactId);
+    console.log(`Deleted card ${card.artifactId} from Firebase`);
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting card from Firebase:', error);
+    throw error;
+  }
 }
