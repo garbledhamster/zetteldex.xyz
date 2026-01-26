@@ -11,6 +11,8 @@ let startY = 0
 let isEditMode = false
 let viewMode = 'zettel'
 let isResizing = false
+let isAddingCard = false
+let isAddingBibCard = false
 const HIERARCHY_THRESHOLD = 1000
 document.addEventListener('DOMContentLoaded', () => {
   feather.replace()
@@ -140,6 +142,11 @@ function closeNewCardModal() {
   document.getElementById('newBibCardModal').classList.remove('visible')
 }
 function addCardFromModal() {
+  // Prevent duplicate submissions
+  if (isAddingCard) {
+    return
+  }
+
   const index = document.getElementById('modalIndex').value.trim()
   const name = document.getElementById('modalName').value.trim()
   const keywords = document.getElementById('modalKeywords').value.trim()
@@ -147,6 +154,9 @@ function addCardFromModal() {
     showInfoModal('Missing Fields','Index and Name are required.')
     return
   }
+
+  isAddingCard = true
+
   const c = {
     index,
     name,
@@ -168,8 +178,18 @@ function addCardFromModal() {
   }
 
   renderSidebar()
+
+  // Reset flag after a short delay
+  setTimeout(() => {
+    isAddingCard = false
+  }, 500)
 }
 function addBibCardFromModal() {
+  // Prevent duplicate submissions
+  if (isAddingBibCard) {
+    return
+  }
+
   const author = document.getElementById('modalAuthor').value.trim()
   const title = document.getElementById('modalTitle').value.trim()
   const subtitle = document.getElementById('modalSubtitle').value.trim()
@@ -178,6 +198,9 @@ function addBibCardFromModal() {
     showInfoModal('Missing Fields','Author and Title are required.')
     return
   }
+
+  isAddingBibCard = true
+
   const c = {
     author,
     title,
@@ -191,6 +214,11 @@ function addBibCardFromModal() {
   closeNewCardModal()
   saveToLocalStorage()
   renderSidebar()
+
+  // Reset flag after a short delay
+  setTimeout(() => {
+    isAddingBibCard = false
+  }, 500)
 }
 function renderSidebar() {
   const ul = document.getElementById('indexList').querySelector('ul')
