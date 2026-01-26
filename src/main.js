@@ -128,13 +128,11 @@ function setupAuthUI() {
 
   // Logout
   logoutBtn.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to log out?')) {
-      try {
-        await signOut();
-        showInfo('Logged Out', 'You have been logged out successfully');
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
+    try {
+      await signOut();
+      showInfo('Logged Out', 'You have been logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   });
 
