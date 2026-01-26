@@ -282,6 +282,12 @@ export async function deleteCardFromFirebase(card, type = 'note') {
     let artifactIdToDelete = card.artifactId;
 
     // If card doesn't have artifactId, search for it in Firebase
+    // Note: This is a fallback for the rare case where a user deletes a card
+    // immediately after creation, before the real-time sync has completed.
+    // We fetch all active artifacts of the given type to find a match.
+    // This is acceptable since: 1) it's a rare case, 2) most users won't have
+    // thousands of notes, 3) Firestore doesn't easily support queries on nested
+    // fields without indexes.
     if (!artifactIdToDelete) {
       console.log('Card has no artifactId, searching Firebase for matching artifact...');
       const artifacts = await getUserArtifacts(type);
@@ -290,6 +296,7 @@ export async function deleteCardFromFirebase(card, type = 'note') {
       let matchingArtifact;
       if (type === 'note') {
         // Match by index for note cards
+        // Check both noteId (current) and zettelId (legacy) for backward compatibility
         matchingArtifact = artifacts.find(a => 
           a.data?.core?.meta?.noteId === card.index || 
           a.data?.core?.meta?.zettelId === card.index
