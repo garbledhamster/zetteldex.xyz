@@ -37,22 +37,21 @@ header {
 .header-content {
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: relative;
+    justify-content: space-between;
+    gap: 0.5rem;
 }
 .header-content h1 {
     font-size: 1.2rem;
     font-weight: 500;
-    flex: none;
+    flex: 1;
+    text-align: center;
+    min-width: 0;
 }
 
 /* Mobile toggle hidden by default; displayed via media query */
 .mobile-toggle {
     display: none;
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+    flex-shrink: 0;
 }
 
 /* Container */
@@ -463,7 +462,7 @@ header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .auth-btn {
